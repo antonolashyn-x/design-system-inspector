@@ -37,7 +37,6 @@ export function Colors({ colors }: { colors: ColorEntry[] }) {
   }, [colors, q, role, source]);
 
   const count = (f: RoleFilter) => colors.filter((c) => matchesRole(c, f)).length;
-  const max = filtered[0]?.count ?? 1;
 
   return (
     <div className="view">
@@ -92,7 +91,7 @@ export function Colors({ colors }: { colors: ColorEntry[] }) {
                     ))}
                 </div>
               </div>
-              <Usage count={c.count} max={max} />
+              <Usage count={c.count} />
               <HighlightButton id={c.key} label={c.tokens[0]?.name ?? c.hex} color={c.rgb} />
             </div>
           ))}

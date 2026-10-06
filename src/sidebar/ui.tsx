@@ -118,13 +118,10 @@ export function HighlightButton({ id, label, color, keys }: { id: string; label:
   );
 }
 
-export function Usage({ count, max }: { count: number; max: number }) {
+export function Usage({ count }: { count: number }) {
   return (
     <div className="usage" title={`Used on ${count} element${count === 1 ? '' : 's'}`}>
       <span className="usage-count">{count.toLocaleString()}×</span>
-      <span className="usage-bar">
-        <span style={{ width: `${Math.max(4, (count / Math.max(max, 1)) * 100)}%` }} />
-      </span>
     </div>
   );
 }

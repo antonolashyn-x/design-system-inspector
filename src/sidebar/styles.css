@@ -195,7 +195,7 @@ button.badge-token:hover { border-color: var(--accent); }
 .icon-btn:hover { border-color: var(--border-strong); color: var(--text); }
 .highlight-btn.is-active { background: var(--hot); border-color: var(--hot); color: #fff; }
 
-.usage { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; width: 64px; flex: none; }
+.usage { display: flex; align-items: center; justify-content: flex-end; width: 64px; flex: none; }
 .usage-count { font-weight: 650; font-variant-numeric: tabular-nums; font-size: 12.5px; }
 .usage-bar { width: 100%; height: 4px; border-radius: 4px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--border); overflow: hidden; }
 .usage-bar > span { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
@@ -363,17 +363,27 @@ button.badge-token:hover { border-color: var(--accent); }
 
 .ts-tip { display: none; }
 
-/* Narrow panel: each row becomes a card; font family spans the row, the rest form a 2×2 grid. */
+/* Narrow panel: each row becomes a card. Name, meta and token on top; then a full-width font-family
+   row; then font size · line height / font weight · letter spacing as a 2×2 grid with dividers. */
 @container (max-width: 760px) {
   .ts-tip { display: block; }
   .ts-head { display: none; }
-  .ts-row { grid-template-columns: 1fr 1fr; padding: 4px 0; }
+  /* Separate cards instead of one table. */
+  .ts-table { border: 0; border-radius: 0; background: none; overflow: visible; display: flex; flex-direction: column; gap: 10px; }
+  .ts-row { grid-template-columns: 1fr 1fr; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
   .ts-row > * + * { border-left: 0; }
-  .ts-row > * { padding: 8px 12px; }
-  .ts-type, .ts-tokencol, .ts-family { grid-column: 1 / -1; }
-  .ts-tokencol { flex-direction: row; align-items: center; padding-top: 0 !important; }
-  .ts-tokencol .ts-label { display: none; }
+  .ts-row > * { padding: 12px 16px; }
   .ts-label { display: block; }
+  .ts-type, .ts-tokencol, .ts-family { grid-column: 1 / -1; }
+  .ts-type { padding-top: 16px; padding-bottom: 8px; }
+  .ts-tokencol { flex-direction: row; align-items: center; padding-top: 0 !important; padding-bottom: 14px; }
+  .ts-tokencol .ts-label { display: none; }
+  .ts-family { flex-direction: row; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .ts-family .ts-value { margin-left: 8px; font-size: 14px; }
+  .ts-family, .ts-cell:not(.ts-tokencol):not(.ts-family) { border-top: 1px solid var(--border); }
+  /* Font size and font weight sit in the left column. */
+  .ts-row > :nth-child(4), .ts-row > :nth-child(6) { border-right: 1px solid var(--border); }
+  .ts-row > :nth-child(n + 4) { padding-top: 14px; padding-bottom: 14px; }
 }
 
 /* ---- Tokens ------------------------------------------------------------- */
@@ -468,7 +478,6 @@ button.badge-token:hover { border-color: var(--accent); }
   .specs { grid-template-columns: repeat(2, 1fr); }
   .color-values { width: 110px; }
   .usage { width: 44px; }
-  .usage-bar { display: none; }
   .highlight-btn span { display: none; }
   .color-row { flex-wrap: wrap; }
   .color-row .row-mid { order: 5; flex-basis: 100%; }

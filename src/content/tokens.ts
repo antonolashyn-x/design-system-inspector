@@ -121,11 +121,17 @@ function resolveOnScope(name: string, scope: string): string | null {
 
 // ---- Classification --------------------------------------------------------
 
-const LENGTH_RE = /^-?[\d.]+(px|rem|em|%|vh|vw|vmin|vmax|ch|ex|pt|svh|dvh|lvh|cqw|cqh)$/;
 const TIME_RE = /^-?[\d.]+m?s$/;
 
+/** Token name in lower-case kebab form, so camelCase reads like kebab: "--bodyLetterSpacing" → "--body-letter-spacing". */
+export const tokenWords = (name: string) =>
+  name
+    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+    .replace(/_/g, '-')
+    .toLowerCase();
+
 export function classifyToken(name: string, value: string): { group: TokenGroup; previewColor?: string } {
-  const n = name.toLowerCase();
+  const n = tokenWords(name);
   const v = value.trim();
 
   if (/shadow|elevation/.test(n)) return { group: 'shadow' };
@@ -140,14 +146,14 @@ export function classifyToken(name: string, value: string): { group: TokenGroup;
   if (/breakpoint|screen|(^|-)bp(-|$)|media/.test(n)) return { group: 'breakpoint' };
   if (/font|typo|line-height|leading|tracking|letter-spacing|weight|family|(^|-)text-(xs|sm|base|md|lg|xl|\d)|heading|body-size|display/.test(n))
     return { group: 'typography' };
-  if (/space|spacing|gap|padding|margin|inset|gutter|offset/.test(n)) return { group: 'spacing' };
+  if (/space|spacing|gap|padding|margin|inset|gutter/.test(n)) return { group: 'spacing' };
   if (/size|width|height|container|max-|min-|(^|-)w-|(^|-)h-/.test(n)) return { group: 'size' };
   if (/color|colour|bg|background|border|fill|stroke|surface|foreground/.test(n) && v.startsWith('var(')) return { group: 'color' };
 
   // Value-only fallbacks
   if (/\d(px|rem|em)?\s+-?\d.*(rgba?|hsla?|#|oklch)/.test(v) || /(rgba?|hsla?|#)[^,]*\s+-?\d+px\s+-?\d+px/.test(v)) return { group: 'shadow' };
   if (/,/.test(v) && /(sans|serif|mono|system-ui|-apple-system|"|')/.test(v)) return { group: 'typography' };
-  if (LENGTH_RE.test(v)) return { group: 'spacing' };
+  // A bare length (blur, offsets, sizes…) says nothing about being spacing: only the name can tell.
   return { group: 'other' };
 }
 

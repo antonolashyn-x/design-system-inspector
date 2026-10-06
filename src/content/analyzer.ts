@@ -11,7 +11,7 @@ import type {
   TypoProperty,
 } from '../shared/types';
 import { colorFromTokenValue, parseColor, toHex, toRgbString } from './color';
-import { addInlineToken, scanTokens, varRefs, type TypeRule, type TypeRuleProp } from './tokens';
+import { addInlineToken, scanTokens, tokenWords, varRefs, type TypeRule, type TypeRuleProp } from './tokens';
 import { OVERLAY_HOST_ID } from './highlight';
 import { HANDLE_HOST_ID, PANEL_HOST_ID } from './panel';
 
@@ -131,7 +131,13 @@ function isFontShorthand(value: string): boolean {
 
 /** Hashed / generated class names (CSS modules, styled-components, …) say nothing about naming. */
 function isGeneratedClass(c: string): boolean {
-  return /^(css|sc|jsx|svelte|astro|emotion|chakra|tw)-/.test(c) || (/\d/.test(c) && /[_-][A-Za-z0-9]{5,}$/.test(c)) || c.length > 40;
+  return (
+    /^(css|sc|jsx|svelte|astro|emotion|chakra|tw)-/.test(c) ||
+    (/\d/.test(c) && /[_-][A-Za-z0-9]{5,}$/.test(c)) ||
+    // styled-components hashes like "fkCphf": short, mixed case, (almost) no vowels.
+    (/^[a-zA-Z]{5,8}$/.test(c) && /[a-z][A-Z]/.test(c) && (c.match(/[aeiou]/gi)?.length ?? 0) <= 1) ||
+    c.length > 40
+  );
 }
 
 const ref = (t: CssToken): TokenRef => ({ name: t.name, scope: t.scopes[0] ?? ':root' });
@@ -139,7 +145,7 @@ const ref = (t: CssToken): TokenRef => ({ name: t.name, scope: t.scopes[0] ?? ':
 type TypoProp = TypoProperty;
 
 function typographyProperty(t: CssToken): TypoProp | null {
-  const n = t.name.toLowerCase();
+  const n = tokenWords(t.name);
   const v = t.value;
   if (/family|font-(sans|serif|mono|body|heading|display|base|primary|secondary)$/.test(n) || (/,/.test(v) && /[a-z]/i.test(v)))
     return 'font-family';

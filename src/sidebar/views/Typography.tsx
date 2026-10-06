@@ -272,7 +272,7 @@ function Styles({ styles }: { styles: TypographyEntry[] }) {
                   value={Number.isNaN(lh) ? s.lineHeight : `${px(s.lineHeight)}px`}
                   note={Number.isNaN(lh) ? undefined : `(${Math.round((lh / s.fontSizePx) * 100) / 100})`}
                 />
-                <PropCell label="Font weight" tokens={tokensFor(s, 'font-weight')} value={s.fontWeight} note={weightName(s.fontWeight)} />
+                <PropCell label="Font weight" tokens={tokensFor(s, 'font-weight')} value={s.fontWeight} note={WEIGHT_NAMES[s.fontWeight]} />
                 <PropCell
                   label="Letter spacing"
                   tokens={tokensFor(s, 'letter-spacing')}
