@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>DSI harness</title>
+    <style>
+      html, body { margin: 0; height: 100%; }
+      .harness { display: grid; grid-template-columns: var(--panel-w, 420px) 1fr; height: 100vh; }
+      .harness > #root { height: 100vh; border-right: 1px solid #ccc; overflow: hidden; }
+      iframe { width: 100%; height: 100%; border: 0; }
+    </style>
+  </head>
+  <body>
+    <div class="harness">
+      <div id="root"></div>
+      <iframe id="page" src="./fixture.html"></iframe>
+    </div>
+    <script>
+      const w = new URLSearchParams(location.search).get('w');
+      if (w) document.documentElement.style.setProperty('--panel-w', w + 'px');
+    </script>
+    <script type="module" src="./harness.tsx"></script>
+  </body>
+</html>

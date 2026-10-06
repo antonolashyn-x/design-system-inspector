@@ -1,0 +1,53 @@
+{
+  "manifest_version": 3,
+  "name": "Design System Inspector",
+  "short_name": "DS Inspector",
+  "version": "0.4.0",
+  "description": "Extract colors, typography, CSS tokens and shadows from any website. Runs 100% locally.",
+  "action": {
+    "default_title": "Open Design System Inspector",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "sidebar_action": {
+    "default_panel": "sidebar.html",
+    "default_title": "Design System Inspector",
+    "default_icon": "icons/icon-32.png"
+  },
+  "side_panel": {
+    "default_path": "sidebar.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "permissions": [
+    "scripting",
+    "storage",
+    "sidePanel"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "sidebar.html",
+        "assets/*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}

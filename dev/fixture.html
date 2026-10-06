@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Acme — Fixture</title>
+    <style>
+      :root {
+        --blue-500: #2563eb;
+        --blue-600: #1d4ed8;
+        --gray-50: #f9fafb;
+        --gray-200: #e5e7eb;
+        --gray-900: #111827;
+        --color-primary: var(--blue-500);
+        --color-primary-hover: var(--blue-600);
+        --color-bg: var(--gray-50);
+        --color-text: var(--gray-900);
+        --color-border: var(--gray-200);
+        --primary: 262 83% 58%;
+        --font-sans: 'Inter', system-ui, sans-serif;
+        --font-size-sm: 0.875rem;
+        --font-size-base: 1rem;
+        --font-size-2xl: 1.5rem;
+        --font-size-4xl: 2.25rem;
+        --font-weight-bold: 700;
+        --line-height-tight: 1.25;
+        --space-2: 8px;
+        --space-4: 16px;
+        --space-8: 2rem;
+        --radius-md: 8px;
+        --radius-full: 9999px;
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        --duration-fast: 150ms;
+        --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+        --z-modal: 100;
+        --text-heading-2xl: 700 2.25rem/1.25 var(--font-sans);
+        --text-body-m: 400 1rem/1.5 var(--font-sans);
+        /* Same 14px as --font-size-sm and referenced more often, but the nav links don't use it. */
+        --hds-font-heading-xxs-size: 0.875rem;
+      }
+      .hds-eyebrow, .hds-kicker, .hds-overline { font-size: var(--hds-font-heading-xxs-size); }
+      .dark { --color-bg: #0b0b0f; --color-text: #f3f4f6; }
+      /* Bootstrap-style themes */
+      :root, [data-bs-theme="light"] { --base0A: #ffe69c; --base0B: #79dfc1; --bs-body-bg: #fff; --bs-emphasis: var(--gray-900); }
+      [data-bs-theme="dark"] { --base0A: #6f42c1; --base0B: #084298; --bs-body-bg: #212529; --bs-emphasis: var(--gray-50); }
+      /* OS-driven theme */
+      :root { --surface: #ffffff; }
+      @media (prefers-color-scheme: dark) { :root { --surface: #18181b; } }
+      body { margin: 0; font-family: var(--font-sans); background: var(--color-bg); color: var(--color-text); font-size: var(--font-size-base); }
+      header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-8); border-bottom: 1px solid var(--color-border); background: #fff; }
+      nav a { margin-left: var(--space-4); color: var(--color-text); text-decoration: none; font-size: var(--font-size-sm); font-weight: 500; }
+      h1 { font-size: var(--font-size-4xl); font-weight: var(--font-weight-bold); line-height: var(--line-height-tight); letter-spacing: -0.02em; margin: 0 0 var(--space-4); }
+      h2 { font-size: var(--font-size-2xl); font-weight: 600; margin: 0 0 var(--space-2); }
+      main { padding: var(--space-8); max-width: 900px; }
+      .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); margin-top: var(--space-8); }
+      .card { background: #fff; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-4); box-shadow: var(--shadow-sm); }
+      .card.featured { box-shadow: var(--shadow-lg); }
+      .btn { display: inline-block; background: var(--color-primary); color: #fff; padding: var(--space-2) var(--space-4); border-radius: var(--radius-full); border: 0; font: 600 14px/20px var(--font-sans); text-transform: uppercase; letter-spacing: 0.05em; }
+      .btn:hover { background: var(--color-primary-hover); }
+      .badge { background: hsl(var(--primary)); color: white; font-size: 12px; padding: 2px 8px; border-radius: 999px; }
+      .muted { color: #6b7280; }
+      .alert { font: var(--text-body-m); margin-top: var(--space-8); padding: var(--space-4); background: #fef3c7; border-left: 4px solid #f59e0b; color: #92400e; box-shadow: inset 0 0 0 1px rgba(146, 64, 14, 0.15); }
+      svg path { fill: var(--color-primary); }
+    </style>
+    <script type="module" src="../src/content/index.ts"></script>
+    <script type="module">
+      // ?docked simulates clicking the toolbar icon in Opera: the panel docks inside this page.
+      if (new URLSearchParams(location.search).has('docked')) {
+        window.chrome = window.chrome || {};
+        window.chrome.runtime = { getURL: () => '/dev/panel.html' };
+        const { openPanel, listenToPanel } = await import('../src/content/panel.ts');
+        listenToPanel(() => {});
+        openPanel(1);
+      }
+    </script>
+  </head>
+  <body>
+    <header>
+      <strong>
+        <svg width="20" height="20" viewBox="0 0 20 20"><path d="M10 0 20 20H0z" /></svg>
+        Acme
+      </strong>
+      <nav><a href="#">Product</a><a href="#">Pricing</a><a href="#">Docs</a></nav>
+    </header>
+    <main>
+      <span class="badge">New</span>
+      <h1>Build faster with Acme</h1>
+      <p class="muted body-l">The design system that scales with your product team.</p>
+      <button class="btn">Get started</button>
+      <div class="grid">
+        <div class="card"><h2 class="heading-m">Tokens</h2><p>Semantic colors and spacing.</p></div>
+        <div class="card featured"><h2 class="heading-m">Components</h2><p>Accessible building blocks.</p></div>
+        <div class="card"><h2 class="heading-m">Docs</h2><p>Guides for every team.</p></div>
+      </div>
+      <div class="alert" style="--alert-accent: #f59e0b">Heads up: this is a fixture page for testing.</div>
+    </main>
+  </body>
+</html>
