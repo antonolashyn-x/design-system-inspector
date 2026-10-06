@@ -108,12 +108,7 @@ h1, h2, h3, h4 { margin: 0; }
   padding: 12px 16px; border-bottom: 1px solid var(--border);
 }
 .brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.logo { width: 16px; height: 16px; flex: none; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
-.logo i { border-radius: 2px; }
-.logo i:nth-child(1) { background: #8f78ff; }
-.logo i:nth-child(2) { background: #ff6b9d; border-radius: 50%; }
-.logo i:nth-child(3) { background: #3ed3a3; border-radius: 50%; }
-.logo i:nth-child(4) { background: #ffc54d; }
+.logo { width: 18px; height: 18px; flex: none; display: block; }
 .brand-name { font-size: 14px; font-weight: 600; line-height: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .top-actions { display: flex; align-items: center; gap: 4px; flex: none; }
 .icon-ghost {

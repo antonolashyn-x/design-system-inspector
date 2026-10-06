@@ -54,7 +54,7 @@ In Chrome, Edge and Brave the toolbar icon opens the browser's native side panel
 ## Development
 
 - `npm run dev:harness`, then open http://localhost:5199/dev/harness.html, or http://localhost:5199/dev/fixture.html?docked to try the docked panel with collapse and close. This shows the UI beside a fixture page and calls the analyzer directly, with no extension reload. The panel defaults to sidebar width (420 px). Add `?w=360` to try other widths.
-- `npm run icons` regenerates the PNG icons.
+- `npm run icons` regenerates the extension icons (16–128 px) from the master logo `assets/logo.png` (512 px, macOS `sips`).
 
 ```
 src/content/   analyzer (runs in the page): analyzer.ts, tokens.ts, color.ts, highlight.ts, index.ts

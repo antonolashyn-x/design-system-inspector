@@ -9,6 +9,7 @@ import { Tokens } from './views/Tokens';
 import { Shadows } from './views/Shadows';
 import { exportJson } from './export';
 import { useTheme, type Theme } from './theme';
+import logoUrl from '../../public/icons/icon-48.png';
 
 export type TabId = 'overview' | 'colors' | 'typography' | 'tokens' | 'shadows';
 
@@ -116,12 +117,7 @@ export function App({ bridge }: { bridge: Bridge }) {
       <div className="app">
         <header className="topbar">
           <div className="brand">
-            <span className="logo" aria-hidden="true">
-              <i />
-              <i />
-              <i />
-              <i />
-            </span>
+            <img className="logo" src={logoUrl} alt="" width={18} height={18} />
             <h1 className="brand-name">Design System Inspector</h1>
           </div>
           <div className="top-actions">
