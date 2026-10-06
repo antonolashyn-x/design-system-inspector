@@ -1,6 +1,6 @@
 import { useMemo, useState, type CSSProperties } from 'react';
 import type { CssToken, TypeTokenRef, TypographyEntry } from '../../shared/types';
-import { Copyable, Empty, HighlightButton, Search, Segmented, ShowMore, useActions } from '../ui';
+import { Copyable, Empty, FontStack, HighlightButton, Icons, Search, Segmented, ShowMore, useActions } from '../ui';
 
 type Sort = 'usage' | 'size';
 type SubTab = 'styles' | 'font-family' | 'font-size' | 'font-weight';
@@ -114,18 +114,41 @@ function styleName(e: TypographyEntry): { name: string; known: boolean } {
   return role ? { name: role.label, known: true } : { name: PLACEHOLDER_NAME, known: false };
 }
 
-function TokenChip({ token, kind = 'prop', more = 0 }: { token: TypeTokenRef; kind?: 'prop' | 'style'; more?: number }) {
+/** Same purple badge as the token badges elsewhere; dashed with "≈" when the token only shares the value. */
+function TokenBadgeChip({ token }: { token: TypeTokenRef }) {
   const { copy } = useActions();
   const title = token.declared
-    ? `var(${token.name}) — click to copy`
+    ? `CSS variable declared on ${token.scope} — click to copy`
     : `Same value as var(${token.name}), but the CSS doesn’t reference it — click to copy`;
   return (
-    <span className="ts-chips">
-      <button className={`ts-token ${kind}${token.declared ? '' : ' approx'}`} title={title} onClick={() => copy(`var(${token.name})`, token.name)}>
-        {!token.declared && <span aria-label="same value">≈ </span>}
-        {token.name.replace(/^--/, '')}
-      </button>
-      {more > 0 && <span className="ts-more">+{more}</span>}
+    <button className={`badge badge-token${token.declared ? '' : ' approx'}`} title={title} onClick={() => copy(`var(${token.name})`, token.name)}>
+      {token.declared ? Icons.braces(11) : <span aria-label="same value">≈</span>}
+      <span className="mono">{token.name}</span>
+    </button>
+  );
+}
+
+/** The first token, then "+N" for the others: hover lists them, click shows them all. */
+function TokenChips({ tokens }: { tokens: TypeTokenRef[] }) {
+  const [open, setOpen] = useState(false);
+  if (!tokens.length) return null;
+  const rest = tokens.slice(1);
+  const noun = rest.length === 1 ? 'other token' : 'other tokens';
+  const what = tokens[0].declared ? `${noun} applied here` : `${noun} with the same value`;
+  return (
+    <span className="badge-row ts-chips">
+      {(open ? tokens : tokens.slice(0, 1)).map((t) => (
+        <TokenBadgeChip key={t.name} token={t} />
+      ))}
+      {rest.length > 0 && (
+        <button
+          className="badge badge-more"
+          title={open ? 'Show fewer' : `${rest.length} ${what}:\n${rest.map((t) => t.name).join('\n')}\n\nClick to show them`}
+          onClick={() => setOpen((o) => !o)}
+        >
+          {open ? 'Less' : `+${rest.length}`}
+        </button>
+      )}
     </span>
   );
 }
@@ -148,7 +171,7 @@ function PropCell({
   return (
     <div className={`ts-cell ${className}`}>
       <span className="ts-label">{label}</span>
-      {tokens[0] && <TokenChip token={tokens[0]} more={tokens.length - 1} />}
+      <TokenChips tokens={tokens} />
       <span className="ts-value" title={title}>
         {value}
         {note && <span className="muted"> {note}</span>}
@@ -245,17 +268,17 @@ function Styles({ styles }: { styles: TypographyEntry[] }) {
                 <div className="ts-cell ts-tokencol">
                   <span className="ts-label">Token</span>
                   {declaredStyle.length ? (
-                    <TokenChip token={declaredStyle[0]} kind="style" more={declaredStyle.length - 1} />
+                    <TokenChips tokens={declaredStyle} />
                   ) : s.classes.length ? (
                     <span className="ts-chips">
                       {s.classes.map((c) => (
-                        <span key={c.name} className="ts-class" title={`CSS class on ${c.count} of ${s.count} element${s.count === 1 ? '' : 's'} with this style`}>
+                        <span key={c.name} className="ts-class" title={`.${c.name} — on ${c.count} of ${s.count} element${s.count === 1 ? '' : 's'} with this style`}>
                           .{c.name}
                         </span>
                       ))}
                     </span>
                   ) : null}
-                  {!declaredStyle.length && approxStyle[0] && <TokenChip token={approxStyle[0]} kind="style" more={approxStyle.length - 1} />}
+                  {!declaredStyle.length && <TokenChips tokens={approxStyle} />}
                   {!declaredStyle.length && !s.classes.length && !approxStyle.length && <span className="muted">—</span>}
                 </div>
                 <PropCell
@@ -371,7 +394,11 @@ function PropertyView({ prop, styles, tokens }: { prop: Prop; styles: Typography
                     {token.name}
                   </button>
                   <div className="tk-values">
-                    <Copyable text={token.value} className="mono small tk-value" />
+                    {prop === 'font-family' ? (
+                      <FontStack value={token.value} className="mono small tk-value" />
+                    ) : (
+                      <Copyable text={token.value} className="mono small tk-value" />
+                    )}
                     {token.resolved && token.resolved !== token.value && <span className="mono small muted">= {token.resolved}</span>}
                     {prop === 'font-weight' && token.resolved && <span className="small muted">{weightName(token.resolved)}</span>}
                     {token.aliasOf && <span className="tk-alias mono small">→ {token.aliasOf}</span>}
@@ -401,9 +428,13 @@ function PropertyView({ prop, styles, tokens }: { prop: Prop; styles: Typography
               <div className="row tp-row" key={v.value}>
                 <Preview prop={prop} value={v.value} />
                 <div className="tk-main">
-                  <Copyable text={v.value} className="mono strong tp-value">
-                    {prop === 'font-weight' ? `${v.value} · ${weightName(v.value)}` : v.value}
-                  </Copyable>
+                  {prop === 'font-family' ? (
+                    <FontStack value={v.value} className="mono strong tp-value" />
+                  ) : (
+                    <Copyable text={v.value} className="mono strong tp-value">
+                      {prop === 'font-weight' ? `${v.value} · ${weightName(v.value)}` : v.value}
+                    </Copyable>
+                  )}
                   <span className="usage-bar tp-bar">
                     <span style={{ width: `${Math.max(4, (v.count / maxCount) * 100)}%` }} />
                   </span>

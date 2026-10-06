@@ -90,12 +90,46 @@ export function TokenList({ tokens, max = 2 }: { tokens: TokenRef[]; max?: numbe
   );
 }
 
-export function Copyable({ text, children, className = '' }: { text: string; children?: ReactNode; className?: string }) {
+export function Copyable({ text, children, className = '', title }: { text: string; children?: ReactNode; className?: string; title?: string }) {
   const { copy } = useActions();
   return (
-    <button className={`copyable ${className}`} title="Click to copy" onClick={() => copy(text)}>
+    <button className={`copyable ${className}`} title={title ? `${title}\n\nClick to copy` : 'Click to copy'} onClick={() => copy(text)}>
       {children ?? text}
     </button>
+  );
+}
+
+/** Splits a font stack on top-level commas: "\"Mona Sans VF\", -apple-system, …" → ["Mona Sans VF", "-apple-system", …]. */
+function splitStack(value: string): string[] {
+  const out: string[] = [];
+  let cur = '';
+  let depth = 0;
+  let quote = '';
+  for (const ch of value) {
+    if (quote) {
+      if (ch === quote) quote = '';
+      else cur += ch;
+      continue;
+    }
+    if (ch === '"' || ch === "'") quote = ch;
+    else if (ch === '(') depth++, (cur += ch);
+    else if (ch === ')') depth--, (cur += ch);
+    else if (ch === ',' && depth === 0) out.push(cur.trim()), (cur = '');
+    else cur += ch;
+  }
+  if (cur.trim()) out.push(cur.trim());
+  return out;
+}
+
+/** A font stack shown as its first font plus a count ("Mona Sans VF +9"); the full stack is on hover and copied on click. */
+export function FontStack({ value, className = '' }: { value: string; className?: string }) {
+  const fonts = /^\s*var\(/.test(value) ? [] : splitStack(value);
+  if (fonts.length < 2) return <Copyable text={value} className={className} />;
+  return (
+    <Copyable text={value} className={className} title={fonts.join(', ')}>
+      {fonts[0]}
+      <span className="stack-more"> +{fonts.length - 1}</span>
+    </Copyable>
   );
 }
 

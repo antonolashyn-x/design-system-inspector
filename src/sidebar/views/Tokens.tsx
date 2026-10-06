@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { CssToken, ThemeInfo, TokenGroup } from '../../shared/types';
-import { Copyable, Empty, Icons, Search, Segmented, ShowMore, useActions } from '../ui';
+import { Copyable, Empty, FontStack, Icons, Search, Segmented, ShowMore, useActions } from '../ui';
 
 export const GROUP_LABELS: Record<TokenGroup, string> = {
   color: 'Color',
@@ -146,6 +146,8 @@ function TokenRow({ t, view, themes, onFocusAlias }: { t: CssToken; view: string
   const raw = current ? current.raw : t.rawValue;
   const alias = (current ? ALIAS_RE.exec(current.raw)?.[1] : t.aliasOf) ?? undefined;
   const shownThemes = tv ? themes.filter((th) => tv[th.id]) : [];
+  // Font stacks are long; they're shortened to the first font and the raw form is left out.
+  const isStack = t.typeProperty === 'font-family';
 
   return (
     <div className={`row token-row${tv ? ' is-themed' : ''}`} id={`tk-${t.name}`}>
@@ -181,11 +183,12 @@ function TokenRow({ t, view, themes, onFocusAlias }: { t: CssToken; view: string
           </div>
         ) : (
           <div className="tk-values">
-            <Copyable text={value} className="mono small tk-value" />
+            {isStack ? <FontStack value={value} className="mono small tk-value" /> : <Copyable text={value} className="mono small tk-value" />}
             {current?.inherited && <span className="small muted">inherited</span>}
             {alias ? (
               <AliasLink name={alias} onFocus={onFocusAlias} />
             ) : (
+              !isStack &&
               raw &&
               raw !== value && (
                 <span className="mono small muted tk-raw" title="As written in the stylesheet">

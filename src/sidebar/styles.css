@@ -339,25 +339,10 @@ button.badge-token:hover { border-color: var(--accent); }
 .ts-cell { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
 .ts-label { display: none; font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
 .ts-chips { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; max-width: 100%; }
-.ts-token {
-  max-width: 100%; padding: 1px 6px; border-radius: 4px; font: 500 12px/18px var(--font); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  color: #1d5f8a; background: #eef6fb; border: 1px solid #d3e6f2;
-}
-.ts-token.style { color: #2a6e2f; background: #edf7ee; border-color: #cfe8d1; }
-.ts-token:hover { filter: brightness(0.97); }
-:root[data-theme='dark'] .ts-token { color: #8ccaf0; background: #10283a; border-color: #1d4058; }
-:root[data-theme='dark'] .ts-token.style { color: #9ad89e; background: #11291a; border-color: #1f4a2b; }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) .ts-token { color: #8ccaf0; background: #10283a; border-color: #1d4058; }
-  :root:not([data-theme='light']) .ts-token.style { color: #9ad89e; background: #11291a; border-color: #1f4a2b; }
-}
-.ts-class { padding: 1px 6px; border-radius: 4px; border: 1px dashed var(--border-strong); font: 12px/18px var(--mono); color: var(--text-2); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ts-token.approx { color: var(--text-2); background: transparent; border-style: dashed; border-color: var(--border-strong); }
-:root[data-theme='dark'] .ts-token.approx { color: var(--text-2); background: transparent; border-color: var(--border-strong); }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) .ts-token.approx { color: var(--text-2); background: transparent; border-color: var(--border-strong); }
-}
-.ts-more { font-size: 11px; color: var(--muted); }
+.badge-token.approx { background: transparent; border-style: dashed; }
+.ts-chips .badge { max-width: 100%; }
+.ts-class { display: block; max-width: 100%; min-width: 0; padding: 1px 6px; border-radius: 4px; border: 1px dashed var(--border-strong); font: 12px/18px var(--mono); color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stack-more { color: var(--muted); font-weight: 500; }
 .ts-value { font-size: 13px; color: var(--text); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .ts-value .muted { font-size: 11.5px; }
 
