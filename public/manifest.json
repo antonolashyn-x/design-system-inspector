@@ -4,6 +4,8 @@
   "short_name": "DS Inspector",
   "version": "0.4.0",
   "description": "Extract colors, typography, CSS tokens and shadows from any website. Runs 100% locally.",
+  "author": "Anton Olashyn",
+  "homepage_url": "https://github.com/antonolashyn-x/design-system-inspector",
   "action": {
     "default_title": "Open Design System Inspector",
     "default_icon": {

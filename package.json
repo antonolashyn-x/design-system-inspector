@@ -2,6 +2,18 @@
   "name": "design-system-inspector",
   "version": "0.4.0",
   "private": true,
+  "description": "Browser extension that reverse-engineers the design system of any website: colors, typography, CSS tokens and shadows.",
+  "author": "Anton Olashyn <antonolashyn@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/antonolashyn-x/design-system-inspector",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/antonolashyn-x/design-system-inspector.git"
+  },
+  "bugs": {
+    "url": "https://github.com/antonolashyn-x/design-system-inspector/issues",
+    "email": "antonolashyn@gmail.com"
+  },
   "type": "module",
   "scripts": {
     "icons": "node scripts/make-icons.mjs",

@@ -13,7 +13,8 @@
   <a href="https://github.com/antonolashyn-x/design-system-inspector/releases/latest"><b>Download</b></a> ·
   <a href="#install-in-chrome">Install in Chrome</a> ·
   <a href="#install-in-opera">Install in Opera</a> ·
-  <a href="#features">Features</a>
+  <a href="#features">Features</a> ·
+  <a href="#feedback">Feedback</a>
 </p>
 
 ---
@@ -138,3 +139,20 @@ src/shared/    shared types
 ```
 
 </details>
+
+---
+
+## Feedback
+
+**Found a bug or have an idea?** I'd love to hear from you.
+
+- 🐞 [Open an issue](https://github.com/antonolashyn-x/design-system-inspector/issues/new) on GitHub, or
+- ✉️ Email me at **[antonolashyn@gmail.com](mailto:antonolashyn@gmail.com?subject=Design%20System%20Inspector%20feedback)**
+
+For bugs, it helps to include the website URL, your browser and a screenshot.
+
+---
+
+<p align="center">
+  Made by <b>Anton Olashyn</b> · <a href="LICENSE">MIT License</a>
+</p>
