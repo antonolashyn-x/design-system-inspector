@@ -1,63 +1,140 @@
-# Design System Inspector
+<p align="center">
+  <img src="assets/logo.png" alt="" width="96" height="96" />
+</p>
 
-An Opera (and any Chromium) extension that reverse-engineers the visual design system of the page you're viewing: colors, typography, CSS tokens and shadows. Everything runs locally in your browser. There's no backend.
+<h1 align="center">Design System Inspector</h1>
+
+<p align="center">
+  Reverse-engineer the design system of any website: colors, typography, CSS tokens and shadows.<br />
+  A browser extension for Chrome, Opera, Edge and Brave. Runs 100% locally.
+</p>
+
+<p align="center">
+  <a href="https://github.com/antonolashyn-x/design-system-inspector/releases/latest"><b>Download</b></a> ·
+  <a href="#install-in-chrome">Install in Chrome</a> ·
+  <a href="#install-in-opera">Install in Opera</a> ·
+  <a href="#features">Features</a>
+</p>
+
+---
+
+## Features
+
+| | |
+| --- | --- |
+| **Overview** | A one-screen summary: palette, font families, token groups and counts. |
+| **Colors** | Every color used on the page, merged by HEX and sorted by usage. Shows where each one is used (text, background, border, SVG) and the tokens that hold it. |
+| **Typography** | A type scale of every text style, with family, size, line height, weight and letter spacing, and the tokens behind each one. |
+| **Tokens** | All CSS custom properties, grouped into color, typography, spacing, radius, shadow, size, motion, z-index and breakpoint. Shows aliases, light/dark values and usage counts. |
+| **Shadows** | Live previews of every `box-shadow`, split into layers. |
+| **Find** | Outlines every element that uses a color, text style or shadow. Step through them with ‹ ›. |
+| **Export** | Downloads JSON in the W3C Design Tokens format, ready for Figma token plugins. Light and dark values are included as modes. |
+
+---
+
+## Install in Chrome
+
+Works the same way in **Edge** and **Brave**.
+
+1. **Download** `design-system-inspector-v<version>.zip` from the [latest release](https://github.com/antonolashyn-x/design-system-inspector/releases/latest) and **unzip** it.
+2. Open **`chrome://extensions`**.
+3. Turn on **Developer mode** (toggle in the top-right corner).
+4. Click **Load unpacked** and select the unzipped folder (the one that contains `manifest.json`).
+5. **Pin it:** click the puzzle icon 🧩 in the toolbar, then the pin next to *Design System Inspector*.
+6. Open any website and click the extension icon. The inspector opens in Chrome's **side panel**.
+
+> [!TIP]
+> **Updating:** unzip the new version over the same folder, then click **↻ Reload** on the extension's card in `chrome://extensions`.
 
 ## Install in Opera
 
-Download the zip from the latest [release](../../releases) and unzip it, or build it yourself:
+1. **Download** and **unzip** the [latest release](https://github.com/antonolashyn-x/design-system-inspector/releases/latest).
+2. Open **`opera://extensions`** and turn on **Developer mode** (top right).
+3. Click **Load unpacked** and select the unzipped folder.
+4. Click the extension icon. The inspector opens as a panel docked on the right side of the page.
+
+| Panel control | What it does |
+| --- | --- |
+| **Collapse** (panel icon in the header) | Hides the panel behind a small **‹ DS Inspector** tab on the right edge. Highlights stay on the page. |
+| **×** | Closes the panel. |
+| **Left edge** | Drag it to resize the panel. |
+
+The panel stays open while you browse in that tab and re-scans the page after each load.
+
+> [!NOTE]
+> Browser pages (`chrome://`, `opera://`) and the extension stores can't be inspected. The icon flashes a red **!** there.
+
+---
+
+## Privacy
+
+Everything happens in your browser. There is no server, no account and no tracking.
+
+| Permission | Why it's needed |
+| --- | --- |
+| Access to all sites | To read the styles of the page you choose to inspect. |
+| `scripting` | To run the analyzer in that page. |
+| `sidePanel` | To open the inspector in Chrome's side panel. |
+| `storage` | To remember which tabs have the docked panel open (Opera). |
+
+---
+
+<details>
+<summary><b>How it works</b></summary>
+
+<br />
+
+**Tokens that are really applied.** For typography, the analyzer finds the CSS rule that sets each property on an element, or on the ancestor it inherits from. It records the `var()` that rule uses, after checking that it produces the value you see. These tokens show as **solid chips**. When no such token is found, tokens that only share the value are shown as dashed **≈ chips**. A 14px font size may match several tokens, and the page doesn't use all of them.
+
+**Style names.** Text styles are named from their token or CSS classes, using obvious role words only:
+
+| Found in a token or class | Name |
+| --- | --- |
+| `btn`, `button` | Button |
+| `display` | Display |
+| `link` | Link |
+| `heading`, `h1`–`h6` | Heading |
+| `title` | Title |
+| `body` | Body |
+| `text` | Text |
+
+A size that follows the role word is added, e.g. `btn-lg` → *Button LG*, `display-4` → *Display 4*, `hds-text--xl` → *Text XL*. Anything else shows **Lorem Ipsum**, rendered in that style.
+
+**Themes.** Light and dark (and other) themes are detected from the common patterns: `[data-theme=dark]`, `[data-bs-theme]`, `.dark`, `[data-dark-theme]` and `@media (prefers-color-scheme: dark)`. Each token shows its value in every theme.
+
+</details>
+
+<details>
+<summary><b>Known limits</b></summary>
+
+<br />
+
+- Stylesheets from other domains that block reading can't be inspected. Tokens on `:root` are still found, but tokens scoped elsewhere in those files are missed. The Overview shows how many stylesheets were blocked.
+- Only the main page is scanned: no iframes or closed shadow roots, and at most 20,000 elements.
+- Gradients, `text-shadow` and `filter: drop-shadow` aren't analysed yet.
+- Font previews use the fonts installed on your computer.
+
+</details>
+
+<details>
+<summary><b>Development</b></summary>
+
+<br />
 
 ```bash
 npm install
-npm run build
+npm run build        # builds the extension into dist/
+npm run package      # builds and zips it into release/design-system-inspector-v<version>.zip
+npm run dev:harness  # live UI next to a test page, no extension reload needed
+npm run icons        # regenerates the icons from assets/logo.png (macOS)
 ```
 
-`npm run package` builds and writes `release/design-system-inspector-v<version>.zip`.
-
-1. Open `opera://extensions` and turn on **Developer mode** (top right).
-2. Click **Load unpacked** and select the `dist/` folder (or the unzipped release folder).
-3. Click the extension's toolbar icon. The inspector opens as a panel docked on the right of the page, like Grid Inspector.
-   - **Collapse** (the panel icon in the header) hides it behind a small **‹ DS Inspector** handle on the right edge. Highlights stay on the page. Click the handle, or the toolbar icon, to expand it again.
-   - **×** closes it. Drag the panel's left edge to resize it.
-   - The panel stays open while you navigate within the tab, and re-scans after each page load.
-
-In Chrome, Edge and Brave the toolbar icon opens the browser's native side panel instead.
-
-## What it extracts
-
-| Tab | Source | Notes |
-| --- | --- | --- |
-| Overview | all of the below | Counts, palette, font families, token groups |
-| Colors | `getComputedStyle()` on every visible element (text, background, borders, SVG fill/stroke) | Deduplicated by HEX, sorted by usage, with the roles each color plays |
-| Typography | computed family / size / weight / line-height / letter-spacing / transform of elements that render their own text | Sub-tabs: **Styles**, a type-scale table (Type · Token · Font family · Font size · Line height · Font weight · Letter spacing), stacked into cards in a narrow panel; and **Font family / Font size / Font weight**, which list the site's tokens for that property with resolved values and usage, then the values that have no token |
-| CSS Tokens | readable stylesheets (incl. `@media`, `@layer`, `@import`, nesting) **plus** computed custom properties on `:root`/`body` | Grouped as color / typography / spacing / radius / shadow / size / motion / z-index / breakpoint. Typography splits further into text style / font family / font size / font weight / line height / letter spacing, each sorted by value; radii are sorted smallest to largest. Shows aliases (`--color-primary → --blue-500`), the selectors that declare each token, and how often it is referenced |
-| Shadows | computed `box-shadow` | Live preview, parsed layers, usage |
-
-**Themes.** When a site defines light/dark (or more) themes, the Tokens tab detects them from the usual patterns: `[data-theme=dark]`, `[data-bs-theme=…]`, `.dark`, GitHub's `[data-dark-theme=…]`, and `@media (prefers-color-scheme: dark)`. Every token that changes per theme lists its value for each theme. `var()` references are resolved inside that theme. Switch between *All themes*, *Light* and *Dark*, or turn on *Theme-specific only* to hide tokens that are the same in every theme. The JSON export adds per-theme values as `$extensions.modes`, for Figma variable modes.
-
-**Style names.** The Type column is named only from what the Token column shows: an applied `font` shorthand token, or the CSS classes on the elements. Obvious role words give the name: `btn`/`button` → Button, `display` → Display, `link` → Link, `heading`/`h1`–`h6` → Heading, `title` → Title, `body` → Body, `text` → Text, plus a size that follows (`btn-lg` → Button LG, `display-4` → Display 4, `hds-text--xl` → Text XL). The role word must end the name, so `text-center` or `footer-cta-section__description` don't count. Everything else shows **Lorem Ipsum** in that style.
-
-**Applied tokens vs. same value.** For typography, the analyzer reads the CSS rules (and inline styles) that set each property on an element, or on the ancestor it inherits from, and records the `var()` that is actually applied, after checking that it produces the computed value. Those tokens show as solid chips. When none is found, tokens that merely share the value are listed as dashed **≈** chips: 14px may equal several tokens, and the page doesn't use all of them. Colors and shadows are still matched by resolved value. A dashed **Raw value** badge means the value was only found in computed styles.
-
-**Find.** Outlines every element that uses the selected color, text style or shadow. A pill on the page lets you step through matches with ‹ ›. Press Esc to clear it.
-
-**Theme.** The switch in the footer picks System, Light or Dark. Your choice is remembered.
-
-**Export.** Downloads JSON that includes the tokens in W3C Design Tokens shape (`$value`/`$type`), for Figma token plugins.
-
-## Limits (MVP)
-
-- Cross-origin stylesheets served without CORS headers can't be read. Tokens declared on `:root` are still found through computed styles, but tokens scoped to other selectors in those files are missing. The Overview shows how many sheets were blocked.
-- Only the top document is scanned. iframes and closed shadow roots are skipped. The scan stops after 20,000 elements.
-- Gradients, `text-shadow` and `filter: drop-shadow` aren't analysed yet.
-- Typography previews use fonts installed on your machine.
-
-## Development
-
-- `npm run dev:harness`, then open http://localhost:5199/dev/harness.html, or http://localhost:5199/dev/fixture.html?docked to try the docked panel with collapse and close. This shows the UI beside a fixture page and calls the analyzer directly, with no extension reload. The panel defaults to sidebar width (420 px). Add `?w=360` to try other widths.
-- `npm run icons` regenerates the extension icons (16–128 px) from the master logo `assets/logo.png` (512 px, macOS `sips`).
+With the harness running, open http://localhost:5199/dev/harness.html (add `?w=360` to try other panel widths). For the docked Opera-style panel, open http://localhost:5199/dev/fixture.html?docked.
 
 ```
-src/content/   analyzer (runs in the page): analyzer.ts, tokens.ts, color.ts, highlight.ts, index.ts
-src/sidebar/   React UI (browser sidebar)
-src/shared/    message and data types
+src/content/   analyzer that runs in the page
+src/sidebar/   React UI
+src/shared/    shared types
 ```
+
+</details>
