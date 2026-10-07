@@ -41,7 +41,7 @@ Works the same way in **Edge** and **Brave**.
 1. **Download** `design-system-inspector-v<version>.zip` from the [latest release](https://github.com/antonolashyn-x/design-system-inspector/releases/latest) and **unzip** it.
 2. Open **`chrome://extensions`**.
 3. Turn on **Developer mode** (toggle in the top-right corner).
-4. Click **Load unpacked** and select the unzipped folder (the one that contains `manifest.json`).
+4. Click **Load unpacked** and select the unzipped folder.
 5. **Pin it:** click the puzzle icon 🧩 in the toolbar, then the pin next to *Design System Inspector*.
 6. Open any website and click the extension icon. The inspector opens in Chrome's **side panel**.
 
