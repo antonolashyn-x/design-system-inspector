@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Design System Inspector",
   "short_name": "DS Inspector",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Extract colors, typography, CSS tokens and shadows from any website. Runs 100% locally.",
   "author": "Anton Olashyn",
   "homepage_url": "https://github.com/antonolashyn-x/design-system-inspector",

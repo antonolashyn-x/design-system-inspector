@@ -20,8 +20,8 @@ const PANEL_STYLES = `
 :host { all: initial; }
 .panel {
   position: fixed; top: 0; right: 0; height: 100vh; z-index: 2147483647;
-  display: flex; background: #fff; border-left: 1px solid #444;
-  box-shadow: -4px 0 16px rgba(0,0,0,.35);
+  display: flex; background: #fff; border-left: 1px solid rgba(0,0,0,.08);
+  box-shadow: -8px 0 24px rgba(0,0,0,.06);
 }
 iframe { flex: 1; width: 100%; height: 100%; border: 0; display: block; color-scheme: normal; }
 .grip { position: absolute; left: -4px; top: 0; bottom: 0; width: 8px; cursor: ew-resize; z-index: 1; }

@@ -22,6 +22,11 @@ const devBridge: Bridge = {
   analyze: async () => (await api()).analyze(),
   highlight: async (keys, label, color) => (await api()).highlight(keys, label, color),
   clear: async () => (await api()).clear(),
+  pick: async () => (await api()).pick(),
+  cancelPick: async () => (await api()).cancelPick(),
+  pickKey: async (key) => (await api()).pickKey(key),
+  focusParent: async () => (await api()).focusParent(),
+  unfocus: async () => (await api()).unfocus(),
 };
 
 createRoot(document.getElementById('root')!).render(<App bridge={devBridge} />);

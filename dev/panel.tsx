@@ -15,6 +15,11 @@ const bridge: Bridge = {
   analyze: () => parentApi().analyze(),
   highlight: (keys, label, color) => parentApi().highlight(keys, label, color),
   clear: () => parentApi().clear(),
+  pick: () => parentApi().pick(),
+  cancelPick: () => parentApi().cancelPick(),
+  pickKey: (key) => parentApi().pickKey(key),
+  focusParent: () => parentApi().focusParent(),
+  unfocus: () => parentApi().unfocus(),
   collapse: () => window.parent.postMessage({ dsi: 'collapse' }, '*'),
   close: () => window.parent.postMessage({ dsi: 'close' }, '*'),
 };

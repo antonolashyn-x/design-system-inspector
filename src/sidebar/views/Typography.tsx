@@ -24,15 +24,17 @@ const weightName = (w: string) => WEIGHT_NAMES[w] ?? w;
 /** Size/line-height spec, e.g. "32/40" (or "32/auto" for `line-height: normal`). */
 const specOf = (e: TypographyEntry) => `${px(e.fontSize)}/${e.lineHeight === 'normal' ? 'auto' : px(e.lineHeight)}`;
 
-/** Most common tag rendering this style, with a hint when other tags use it too: "<h1>" / "mostly <p>". */
-function tagHint(e: TypographyEntry) {
-  const tags = Object.entries(e.tags).sort((a, b) => b[1] - a[1]);
-  if (!tags[0]) return '';
-  return tags.length > 1 ? `mostly <${tags[0][0]}>` : `<${tags[0][0]}>`;
-}
+/** Heading tags rendering this style ("<h1> <h2>"); other tags (span, p, div…) say nothing useful. */
+const headingTags = (e: TypographyEntry) =>
+  Object.keys(e.tags)
+    .filter((t) => /^h[1-6]$/.test(t))
+    .sort()
+    .map((t) => `<${t}>`)
+    .join(' ');
 
 // ---- Styles: type-scale table ---------------------------------------------
-// One row per text style: Type · Token · Font family · Font size · Line height · Font weight · Letter spacing.
+// One row per text style: Type (name, style token, heading tag) · Font family · Font size · Line height · Font weight
+// · Letter spacing (hidden when no style on the page sets one).
 // Wide panels get a real table; the narrow sidebar stacks each row into a card with a 2-column grid.
 
 const SIZE_WORD = /^(\d*x*[sml]|sm|md|lg|\d*x[sl]|xx[sl]|base|\d{1,3})$/i;
@@ -88,7 +90,7 @@ function roleName(name: string): { role: string; rank: number; label: string } |
   return { ...hit, label: sizeLabel ? `${hit.role} ${sizeLabel}` : hit.role };
 }
 
-/** Best role among the names shown in the Token column. */
+/** Best role among a style's token and class names. */
 function bestRole(names: string[]) {
   let best: ReturnType<typeof roleName> = null;
   for (const n of names) {
@@ -101,16 +103,16 @@ function bestRole(names: string[]) {
 
 const PLACEHOLDER_NAME = 'Lorem Ipsum';
 
-/** What the Token column shows for a style: applied style tokens, else its most common classes. */
-const tokenColumn = (e: TypographyEntry) => {
+/** Names that may say what a style is: applied style tokens, else its most common classes. */
+const styleNames = (e: TypographyEntry) => {
   const declared = e.styleTokens.filter((t) => t.declared);
   // A class names the style only if it's on a fair share of its elements, not on one stray element.
   return declared.length ? declared.map((t) => t.name) : e.classes.filter((c) => c.count * 4 >= e.count).map((c) => c.name);
 };
 
-/** "Button LG", "Title", … when the Token column says what the text is; otherwise a placeholder. */
-function styleName(e: TypographyEntry): { name: string; known: boolean } {
-  const role = bestRole(tokenColumn(e));
+/** "Button LG", "Title", … when a token or class says what the text is; otherwise a placeholder. */
+export function styleName(e: TypographyEntry): { name: string; known: boolean } {
+  const role = bestRole(styleNames(e));
   return role ? { name: role.label, known: true } : { name: PLACEHOLDER_NAME, known: false };
 }
 
@@ -206,6 +208,8 @@ function Styles({ styles }: { styles: TypographyEntry[] }) {
     return sort === 'size' ? [...out].sort((a, b) => b.fontSizePx - a.fontSizePx || b.count - a.count) : out;
   }, [styles, q, sort, names]);
 
+  const hasLetterSpacing = useMemo(() => styles.some((s) => s.letterSpacing !== 'normal' && parseFloat(s.letterSpacing) !== 0), [styles]);
+
   const tokensFor = (s: TypographyEntry, prop: TypographyEntry['tokens'][number]['property']) =>
     s.tokens.filter((t) => t.property === prop).map((t) => t.token);
 
@@ -226,20 +230,20 @@ function Styles({ styles }: { styles: TypographyEntry[] }) {
       {list.length === 0 ? (
         <Empty title="No text styles match" />
       ) : (
-        <div className="ts-table" role="table">
+        <div className="ts-table" role="table" style={{ '--ts-cols': hasLetterSpacing ? 5 : 4 } as CSSProperties}>
           <div className="ts-head" role="row">
             <span>Type</span>
-            <span>Token</span>
             <span>Font family</span>
             <span>Font size</span>
             <span>Line height</span>
             <span>Font weight</span>
-            <span>Letter spacing</span>
+            {hasLetterSpacing && <span>Letter spacing</span>}
           </div>
           {list.slice(0, limit).map((s) => {
             const { name, known } = nameOf(s);
             const declaredStyle = s.styleTokens.filter((t) => t.declared);
-            const approxStyle = s.styleTokens.filter((t) => !t.declared);
+            const styleTokens = declaredStyle.length ? declaredStyle : s.styleTokens;
+            const headings = headingTags(s);
             const lh = parseFloat(s.lineHeight);
             const ls = s.letterSpacing === 'normal' ? 0 : parseFloat(s.letterSpacing);
             return (
@@ -254,32 +258,15 @@ function Styles({ styles }: { styles: TypographyEntry[] }) {
                       letterSpacing: s.letterSpacing,
                       textTransform: s.textTransform as CSSProperties['textTransform'],
                     }}
-                    title={`${known ? '' : 'The Token column doesn’t say what this text is (button, link, heading, title, display, body, text). '}${s.primaryFamily} — “${s.sample}”`}
+                    title={`${known ? '' : 'No token or class says what this text is (button, link, heading, title, display, body, text). '}${s.primaryFamily} — “${s.sample}” · used ${s.count.toLocaleString()}×`}
                   >
                     {name}
                   </span>
+                  <TokenChips tokens={styleTokens} />
                   <span className="ts-meta">
-                    <span className="muted">
-                      {s.count.toLocaleString()}× · {tagHint(s)}
-                    </span>
+                    <span className="muted">{headings}</span>
                     <HighlightButton id={s.key} label={`${name} · ${specOf(s)}`} />
                   </span>
-                </div>
-                <div className="ts-cell ts-tokencol">
-                  <span className="ts-label">Token</span>
-                  {declaredStyle.length ? (
-                    <TokenChips tokens={declaredStyle} />
-                  ) : s.classes.length ? (
-                    <span className="ts-chips">
-                      {s.classes.map((c) => (
-                        <span key={c.name} className="ts-class" title={`.${c.name} — on ${c.count} of ${s.count} element${s.count === 1 ? '' : 's'} with this style`}>
-                          .{c.name}
-                        </span>
-                      ))}
-                    </span>
-                  ) : null}
-                  {!declaredStyle.length && <TokenChips tokens={approxStyle} />}
-                  {!declaredStyle.length && !s.classes.length && !approxStyle.length && <span className="muted">—</span>}
                 </div>
                 <PropCell
                   label="Font family"
@@ -296,12 +283,14 @@ function Styles({ styles }: { styles: TypographyEntry[] }) {
                   note={Number.isNaN(lh) ? undefined : `(${Math.round((lh / s.fontSizePx) * 100) / 100})`}
                 />
                 <PropCell label="Font weight" tokens={tokensFor(s, 'font-weight')} value={s.fontWeight} note={WEIGHT_NAMES[s.fontWeight]} />
-                <PropCell
-                  label="Letter spacing"
-                  tokens={tokensFor(s, 'letter-spacing')}
-                  value={ls ? `${px(s.letterSpacing)}px` : '0'}
-                  note={ls ? `(${em(ls, s.fontSizePx)})` : undefined}
-                />
+                {hasLetterSpacing && (
+                  <PropCell
+                    label="Letter spacing"
+                    tokens={tokensFor(s, 'letter-spacing')}
+                    value={ls ? `${px(s.letterSpacing)}px` : '0'}
+                    note={ls ? `(${em(ls, s.fontSizePx)})` : undefined}
+                  />
+                )}
               </div>
             );
           })}

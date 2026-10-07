@@ -2,11 +2,13 @@ import type { InspectorApi, InspectorRequest } from '../shared/types';
 import { analyzePage, registry } from './analyzer';
 import { clearHighlight, highlight } from './highlight';
 import { listenToPanel, openPanel, togglePanel } from './panel';
+import { cancelPick, clearFocus, describe, focusedElement, focusParent, pickKey, startPick } from './picker';
 
 declare global {
   interface Window {
     __DSI__?: InspectorApi;
     __dsiListener__?: (msg: InspectorRequest, sender: unknown, respond: (r: unknown) => void) => boolean | void;
+    __dsiConnect__?: (port: chrome.runtime.Port) => void;
   }
 }
 
@@ -20,7 +22,11 @@ function collect(keys: string[]): Element[] {
 const api: InspectorApi = {
   async analyze() {
     clearHighlight();
-    return analyzePage();
+    cancelPick();
+    const focus = focusedElement();
+    const result = analyzePage(focus ?? undefined);
+    if (focus) result.focus = describe(focus);
+    return result;
   },
   async highlight(keys, label, color) {
     return { count: highlight(collect(keys), label, color) };
@@ -28,7 +34,30 @@ const api: InspectorApi = {
   async clear() {
     clearHighlight();
   },
+  pick() {
+    clearHighlight();
+    return startPick();
+  },
+  async cancelPick() {
+    cancelPick();
+  },
+  async pickKey(key) {
+    pickKey(key);
+  },
+  async focusParent() {
+    return focusParent();
+  },
+  async unfocus() {
+    clearFocus();
+  },
 };
+
+/** Leaves inspect mode entirely: no picker, no focus, no highlight. */
+function reset() {
+  cancelPick();
+  clearFocus();
+  clearHighlight();
+}
 
 window.__DSI__ = api;
 
@@ -53,6 +82,19 @@ if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
         case 'dsi:clear':
           await api.clear();
           return { ok: true };
+        case 'dsi:pick':
+          return { ok: true, data: await api.pick() };
+        case 'dsi:pick-cancel':
+          await api.cancelPick();
+          return { ok: true };
+        case 'dsi:pick-key':
+          await api.pickKey(msg.key);
+          return { ok: true };
+        case 'dsi:focus-parent':
+          return { ok: true, data: await api.focusParent() };
+        case 'dsi:unfocus':
+          await api.unfocus();
+          return { ok: true };
         case 'dsi:panel-toggle':
           return { ok: true, data: { open: togglePanel(msg.tabId) } };
         case 'dsi:panel-open':
@@ -71,10 +113,25 @@ if (typeof chrome !== 'undefined' && chrome.runtime?.onMessage) {
   window.__dsiListener__ = listener;
   chrome.runtime.onMessage.addListener(listener);
 
+  // The inspector UI holds a port to this page while it is open; when the side panel closes
+  // (or the extension reloads) drop the picker and the focus so the page isn't left dimmed.
+  if (window.__dsiConnect__) {
+    try {
+      chrome.runtime.onConnect.removeListener(window.__dsiConnect__);
+    } catch {
+      /* listener belonged to an invalidated context */
+    }
+  }
+  const onConnect = (port: chrome.runtime.Port) => {
+    if (port.name === 'dsi-session') port.onDisconnect.addListener(reset);
+  };
+  window.__dsiConnect__ = onConnect;
+  chrome.runtime.onConnect.addListener(onConnect);
+
   // Closing the docked panel from its × button: drop highlights and tell the background
   // so it stops reopening the panel on navigation.
   listenToPanel(() => {
-    clearHighlight();
+    reset();
     chrome.runtime.sendMessage({ type: 'dsi:panel-closed' }).catch(() => undefined);
   });
 }

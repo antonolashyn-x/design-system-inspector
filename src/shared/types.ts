@@ -135,6 +135,18 @@ export interface ThemeInfo {
   tokenCount: number;
 }
 
+/** The element the analysis is limited to (inspect mode). */
+export interface FocusInfo {
+  /** "div#hero.card", for display. */
+  label: string;
+  /** Ancestors down to the element: "body › main › div.card". */
+  path: string;
+  width: number;
+  height: number;
+  /** False for <body>/<html>: nothing wider to focus on. */
+  hasParent: boolean;
+}
+
 export interface FontFamilyEntry {
   family: string;
   count: number;
@@ -156,6 +168,8 @@ export interface AnalysisResult {
   /** Color themes detected from token declarations (empty when the site has a single theme). */
   themes: ThemeInfo[];
   shadows: ShadowEntry[];
+  /** Set when colors, typography and shadows only cover one element's subtree. */
+  focus?: FocusInfo;
 }
 
 // ---- Messaging -------------------------------------------------------------
@@ -166,6 +180,11 @@ export type InspectorRequest =
   | { type: 'dsi:analyze' }
   | { type: 'dsi:highlight'; keys: string[]; label: string; color?: string }
   | { type: 'dsi:clear' }
+  | { type: 'dsi:pick' }
+  | { type: 'dsi:pick-cancel' }
+  | { type: 'dsi:pick-key'; key: string }
+  | { type: 'dsi:focus-parent' }
+  | { type: 'dsi:unfocus' }
   | { type: 'dsi:panel-toggle'; tabId: number }
   | { type: 'dsi:panel-open'; tabId: number };
 
@@ -177,4 +196,11 @@ export interface InspectorApi {
   analyze(): Promise<AnalysisResult>;
   highlight(keys: string[], label: string, color?: string): Promise<HighlightResponse>;
   clear(): Promise<void>;
+  /** Inspect mode: resolves with the picked element, or null when cancelled. */
+  pick(): Promise<FocusInfo | null>;
+  cancelPick(): Promise<void>;
+  /** Forwards ↑ / ↓ / Enter / Esc pressed in the inspector UI to the picker. */
+  pickKey(key: string): Promise<void>;
+  focusParent(): Promise<FocusInfo | null>;
+  unfocus(): Promise<void>;
 }

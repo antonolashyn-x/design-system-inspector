@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
-import type { AnalysisResult } from '../shared/types';
+import type { AnalysisResult, FocusInfo } from '../shared/types';
 import type { Bridge } from './bridge';
 import { ActionsContext, Icons, type Actions } from './ui';
 import { Overview } from './views/Overview';
@@ -7,7 +7,7 @@ import { Colors } from './views/Colors';
 import { Typography } from './views/Typography';
 import { Tokens } from './views/Tokens';
 import { Shadows } from './views/Shadows';
-import { exportJson } from './export';
+import { exportZip } from './export';
 import { useTheme, type Theme } from './theme';
 import logoUrl from '../../public/icons/icon-48.png';
 
@@ -20,6 +20,7 @@ export function App({ bridge }: { bridge: Bridge }) {
   const [tab, setTab] = useState<TabId>('overview');
   const [activeHighlight, setActiveHighlight] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [picking, setPicking] = useState(false);
   const [theme, setTheme] = useTheme();
   const toastTimer = useRef<number>(undefined);
   const scrollRef = useRef<HTMLElement>(null);
@@ -64,15 +65,47 @@ export function App({ bridge }: { bridge: Bridge }) {
 
   // Esc inside the panel clears the on-page highlight (the page's own Esc handler can't see keys typed here).
   useEffect(() => {
-    if (!activeHighlight) return;
+    if (!activeHighlight && !picking) return;
     const onKey = (e: KeyboardEvent) => {
+      if (picking && ['ArrowUp', 'ArrowDown', 'Enter', 'Escape'].includes(e.key)) {
+        e.preventDefault();
+        bridge.pickKey(e.key);
+        return;
+      }
       if (e.key !== 'Escape') return;
       bridge.clear();
       setActiveHighlight(null);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [activeHighlight, bridge]);
+  }, [activeHighlight, picking, bridge]);
+
+  // Inspect mode: pick an element on the page, then re-scan only that element.
+  const togglePick = useCallback(async () => {
+    if (picking) {
+      await bridge.cancelPick();
+      return;
+    }
+    setActiveHighlight(null);
+    setPicking(true);
+    try {
+      const picked = await bridge.pick();
+      setPicking(false);
+      if (picked) analyze();
+    } catch (e) {
+      setPicking(false);
+      showToast((e as Error).message || 'Couldn’t start inspect mode on this page');
+    }
+  }, [picking, bridge, analyze, showToast]);
+
+  const focusParent = useCallback(async () => {
+    if (await bridge.focusParent().catch(() => null)) analyze();
+  }, [bridge, analyze]);
+
+  const unfocus = useCallback(async () => {
+    await bridge.unfocus();
+    analyze();
+  }, [bridge, analyze]);
 
   const actions = useMemo<Actions>(
     () => ({
@@ -121,11 +154,21 @@ export function App({ bridge }: { bridge: Bridge }) {
             <h1 className="brand-name">Design System Inspector</h1>
           </div>
           <div className="top-actions">
+            <button
+              className={`icon-ghost${picking ? ' is-active' : ''}`}
+              onClick={togglePick}
+              disabled={status.kind === 'error'}
+              title={picking ? 'Cancel inspect mode (Esc)' : 'Inspect mode: select an element on the page to focus on it'}
+              aria-label="Inspect mode"
+              aria-pressed={picking}
+            >
+              {Icons.pointer(16)}
+            </button>
             <button className="icon-ghost" onClick={analyze} disabled={status.kind === 'loading'} title="Rescan page" aria-label="Rescan page">
-              <span className={status.kind === 'loading' ? 'spin' : ''}>{Icons.refresh(16)}</span>
+              <span className={status.kind === 'loading' ? 'icon-box spin' : 'icon-box'}>{Icons.refresh(16)}</span>
             </button>
             {data && (
-              <button className="icon-ghost" onClick={() => exportJson(data)} title="Export JSON (W3C design tokens, for Figma token plugins)" aria-label="Export JSON">
+              <button className="icon-ghost" onClick={() => exportZip(data)} title="Download design system (.zip): tokens by category in W3C format, text styles, CSS and detected values" aria-label="Download design system">
                 {Icons.download(16)}
               </button>
             )}
@@ -141,6 +184,20 @@ export function App({ bridge }: { bridge: Bridge }) {
             )}
           </div>
         </header>
+
+        {picking ? (
+          <div className="focus-bar is-picking" role="status">
+            {Icons.pointer(14)}
+            <span className="focus-text">
+              Click an element on the page <span className="muted">· ↑ ↓ parent / child · Esc cancel</span>
+            </span>
+            <button className="focus-btn" onClick={togglePick}>
+              Cancel
+            </button>
+          </div>
+        ) : (
+          data?.focus && <FocusBar focus={data.focus} onParent={focusParent} onExit={unfocus} onRepick={togglePick} />
+        )}
 
         <div className="tabs-bar">
           <div className="tabs-list" role="tablist">
@@ -191,6 +248,28 @@ export function App({ bridge }: { bridge: Bridge }) {
         </div>
       </div>
     </ActionsContext.Provider>
+  );
+}
+
+function FocusBar({ focus, onParent, onExit, onRepick }: { focus: FocusInfo; onParent: () => void; onExit: () => void; onRepick: () => void }) {
+  return (
+    <div className="focus-bar">
+      <span className="focus-text" title={`${focus.path}\n\nColors, typography and shadows cover only this element and its children. Tokens still cover the whole page.`}>
+        <span className="muted">Focused on</span>{' '}
+        <button className="mono focus-label" onClick={onRepick} title="Select a different element">
+          {focus.label}
+        </button>{' '}
+        <span className="muted small">
+          {focus.width} × {focus.height}
+        </span>
+      </span>
+      <button className="focus-btn" onClick={onParent} disabled={!focus.hasParent} title="Focus on the parent element">
+        {Icons.parent(13)} Parent
+      </button>
+      <button className="focus-btn icon-only" onClick={onExit} title="Exit focus: analyse the whole page" aria-label="Exit focus">
+        {Icons.close(14)}
+      </button>
+    </div>
   );
 }
 

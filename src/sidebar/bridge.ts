@@ -1,10 +1,19 @@
-import type { AnalysisResult, HighlightResponse, InspectorRequest } from '../shared/types';
+import type { AnalysisResult, FocusInfo, HighlightResponse, InspectorRequest } from '../shared/types';
 
 /** Abstracts how the UI reaches the page, so the same UI runs in the extension and the dev harness. */
 export interface Bridge {
   analyze(): Promise<AnalysisResult>;
   highlight(keys: string[], label: string, color?: string): Promise<HighlightResponse>;
   clear(): Promise<void>;
+  /** Inspect mode: let the user pick an element on the page; resolves with it, or null when cancelled. */
+  pick(): Promise<FocusInfo | null>;
+  cancelPick(): Promise<void>;
+  /** Forwards ↑ / ↓ / Enter / Esc pressed in the panel to the picker on the page. */
+  pickKey(key: string): Promise<void>;
+  /** Widen the focus to the parent of the focused element. */
+  focusParent(): Promise<FocusInfo | null>;
+  /** Back to analysing the whole page. */
+  unfocus(): Promise<void>;
   /** Subscribe to "the inspected page changed" (tab switch / navigation). */
   onPageChange?(cb: () => void): () => void;
   /** Present when the UI is docked inside the page: collapse to an edge handle, or close. */
@@ -48,6 +57,14 @@ async function ensureInjected(tabId: number) {
  */
 export function createChromeBridge(tabId?: number): Bridge {
   let lastTabId: number | undefined;
+  // One port per inspected tab; the page drops its picker and focus when it disconnects (UI closed).
+  const sessions = new Map<number, chrome.runtime.Port>();
+  const connect = (id: number) => {
+    if (sessions.has(id)) return;
+    const port = chrome.tabs.connect(id, { name: 'dsi-session' });
+    port.onDisconnect.addListener(() => sessions.delete(id));
+    sessions.set(id, port);
+  };
 
   const target = async (): Promise<chrome.tabs.Tab> => (tabId !== undefined ? chrome.tabs.get(tabId) : activeTab());
 
@@ -58,8 +75,11 @@ export function createChromeBridge(tabId?: number): Bridge {
         lastTabId = undefined;
         throw e;
       });
-      // When following the active tab, drop any highlight left on the tab we were inspecting.
-      if (lastTabId !== undefined && lastTabId !== tab.id) send(lastTabId, { type: 'dsi:clear' }).catch(() => undefined);
+      // When following the active tab, drop any highlight or picker left on the tab we were inspecting.
+      if (lastTabId !== undefined && lastTabId !== tab.id) {
+        send(lastTabId, { type: 'dsi:clear' }).catch(() => undefined);
+        send(lastTabId, { type: 'dsi:pick-cancel' }).catch(() => undefined);
+      }
       lastTabId = tab.id;
       try {
         await ensureInjected(tab.id!);
@@ -75,6 +95,31 @@ export function createChromeBridge(tabId?: number): Bridge {
     async clear() {
       const tab = await target().catch(() => null);
       if (tab?.id) await send(tab.id, { type: 'dsi:clear' }).catch(() => undefined);
+    },
+    async pick() {
+      const tab = await target();
+      connect(tab.id!);
+      try {
+        return await send<FocusInfo | null>(tab.id!, { type: 'dsi:pick' });
+      } catch {
+        return null; // the page navigated away while picking
+      }
+    },
+    async cancelPick() {
+      const id = lastTabId ?? (await target().catch(() => null))?.id;
+      if (id !== undefined) await send(id, { type: 'dsi:pick-cancel' }).catch(() => undefined);
+    },
+    async pickKey(key) {
+      const id = lastTabId ?? (await target().catch(() => null))?.id;
+      if (id !== undefined) await send(id, { type: 'dsi:pick-key', key }).catch(() => undefined);
+    },
+    async focusParent() {
+      const tab = await target();
+      return send<FocusInfo | null>(tab.id!, { type: 'dsi:focus-parent' });
+    },
+    async unfocus() {
+      const tab = await target().catch(() => null);
+      if (tab?.id) await send(tab.id, { type: 'dsi:unfocus' }).catch(() => undefined);
     },
     onPageChange(cb) {
       if (tabId !== undefined) {

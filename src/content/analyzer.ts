@@ -14,6 +14,9 @@ import { colorFromTokenValue, parseColor, toHex, toRgbString } from './color';
 import { addInlineToken, scanTokens, tokenWords, varRefs, type TypeRule, type TypeRuleProp } from './tokens';
 import { OVERLAY_HOST_ID } from './highlight';
 import { HANDLE_HOST_ID, PANEL_HOST_ID } from './panel';
+import { FOCUS_HOST_ID, PICKER_HOST_ID } from './picker';
+
+const OWN_HOSTS = new Set([OVERLAY_HOST_ID, PANEL_HOST_ID, HANDLE_HOST_ID, PICKER_HOST_ID, FOCUS_HOST_ID]);
 
 const MAX_ELEMENTS = 20000;
 const MAX_REGISTRY_PER_KEY = 3000;
@@ -298,7 +301,8 @@ function findDeclaredTypeTokens(typeRules: TypeRule[], textEls: [TypographyEntry
 
 // ---- Main ------------------------------------------------------------------
 
-export function analyzePage(): AnalysisResult {
+/** Scans the whole page, or only `root` and its descendants. CSS tokens always cover the whole page. */
+export function analyzePage(root?: Element): AnalysisResult {
   const started = performance.now();
   registry.clear();
 
@@ -335,14 +339,15 @@ export function analyzePage(): AnalysisResult {
 
   const textEls: [TypographyEntry, Element][] = [];
 
-  const all = document.body ? document.body.querySelectorAll('*') : document.querySelectorAll('*');
+  const top = root ?? document.body;
+  const all = top ? top.querySelectorAll('*') : document.querySelectorAll('*');
   const elementsTotal = all.length + 1;
-  const elements: Element[] = document.body ? [document.body] : [];
+  const elements: Element[] = top ? [top] : [];
   for (let i = 0; i < all.length && elements.length < MAX_ELEMENTS; i++) elements.push(all[i]);
 
   let scanned = 0;
   for (const el of elements) {
-    if (SKIP_TAGS.has(el.tagName) || el.id === OVERLAY_HOST_ID || el.id === PANEL_HOST_ID || el.id === HANDLE_HOST_ID) continue;
+    if (SKIP_TAGS.has(el.tagName) || OWN_HOSTS.has(el.id)) continue;
     const cs = getComputedStyle(el);
     if (!isVisible(el, cs)) continue;
     scanned++;

@@ -29,7 +29,8 @@
 | **Tokens** | All CSS custom properties, grouped into color, typography, spacing, radius, shadow, size, motion, z-index and breakpoint. Shows aliases, light/dark values and usage counts. |
 | **Shadows** | Live previews of every `box-shadow`, split into layers. |
 | **Find** | Outlines every element that uses a color, text style or shadow. Step through them with ‹ ›. |
-| **Export** | Downloads JSON in the W3C Design Tokens format, ready for Figma token plugins. Light and dark values are included as modes. |
+| **Inspect mode** | Click the cursor icon, then pick any element on the page (↑ ↓ for parent / child, Esc to cancel). Colors, typography and shadows are then limited to that element and its children. Use **Parent** to widen the focus or × to go back to the whole page. |
+| **Export** | Downloads a .zip: tokens split by category (color, typography, spacing, sizing, radius, shadow, motion…) in the W3C Design Tokens format, text styles, theme overrides, a `tokens.css`, and the values the page actually renders. |
 
 ---
 

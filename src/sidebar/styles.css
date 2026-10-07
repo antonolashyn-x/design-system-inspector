@@ -3,6 +3,7 @@
   --bg: oklch(1 0 0);
   --surface: oklch(1 0 0);
   --surface-2: oklch(0.97 0 0);
+  --card-head: #f4f4f4;
   --border: oklch(0.922 0 0);
   --border-strong: oklch(0.87 0 0);
   --text: oklch(0.145 0 0);
@@ -34,6 +35,7 @@
     --bg: oklch(0.145 0 0);
     --surface: oklch(0.205 0 0);
     --surface-2: oklch(0.269 0 0);
+    --card-head: #222222;
     --border: oklch(1 0 0 / 10%);
     --border-strong: oklch(1 0 0 / 18%);
     --text: oklch(0.985 0 0);
@@ -58,6 +60,7 @@
     --bg: oklch(0.145 0 0);
     --surface: oklch(0.205 0 0);
     --surface-2: oklch(0.269 0 0);
+    --card-head: #222222;
     --border: oklch(1 0 0 / 10%);
     --border-strong: oklch(1 0 0 / 18%);
     --text: oklch(0.985 0 0);
@@ -116,6 +119,24 @@ h1, h2, h3, h4 { margin: 0; }
   transition: background 0.15s;
 }
 .icon-ghost:hover:not(:disabled) { background: var(--surface-2); }
+.icon-ghost.is-active, .icon-ghost.is-active:hover { background: var(--accent-soft); color: var(--accent-ink); }
+
+/* Inspect mode: picking hint, or the element the scan is focused on. */
+.focus-bar {
+  display: flex; align-items: center; gap: 8px; padding: 6px 8px 6px 16px; min-height: 40px;
+  border-bottom: 1px solid var(--accent-line); background: var(--accent-soft); color: var(--accent-ink); font-size: 12px;
+}
+.focus-bar > svg { flex: none; }
+.focus-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.focus-bar .muted { color: color-mix(in oklch, var(--accent-ink) 65%, transparent); }
+.focus-label { font-weight: 600; color: var(--accent-ink); border-radius: 4px; }
+.focus-label:hover { text-decoration: underline; }
+.focus-btn {
+  flex: none; display: inline-flex; align-items: center; gap: 4px; height: 26px; padding: 0 8px; border-radius: 6px;
+  font-size: 12px; font-weight: 550; color: var(--accent-ink);
+}
+.focus-btn.icon-only { width: 26px; padding: 0; justify-content: center; }
+.focus-btn:hover:not(:disabled) { background: color-mix(in oklch, var(--accent) 14%, transparent); }
 
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0 12px;
@@ -146,7 +167,8 @@ h1, h2, h3, h4 { margin: 0; }
 .theme-switch button:hover { color: var(--text); }
 .theme-switch button.is-active { background: var(--bg); color: var(--text); box-shadow: var(--shadow-sm); }
 
-.spin { display: inline-flex; animation: spin 0.9s linear infinite; }
+.icon-box { display: inline-flex; }
+.spin { animation: spin 0.9s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .content { flex: 1; overflow-y: auto; overflow-x: hidden; min-height: 0; }
@@ -324,14 +346,15 @@ button.badge-token:hover { border-color: var(--accent); }
 /* ---- Type-scale table ---------------------------------------------------- */
 .ts-table { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
 .ts-head, .ts-row {
-  display: grid; grid-template-columns: minmax(170px, 1.6fr) minmax(130px, 1.1fr) repeat(5, minmax(110px, 1fr));
+  display: grid; grid-template-columns: minmax(190px, 1.8fr) repeat(var(--ts-cols, 5), minmax(110px, 1fr));
 }
 .ts-head { background: var(--surface-2); font-size: 12px; font-weight: 600; color: var(--text); }
 .ts-head > span { padding: 10px 12px; }
 .ts-head > span + span, .ts-row > * + * { border-left: 1px solid var(--border); }
 .ts-row { border-top: 1px solid var(--border); }
 .ts-row > * { padding: 12px; min-width: 0; }
-.ts-type { display: flex; flex-direction: column; justify-content: center; gap: 6px; }
+.ts-type { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 6px; }
+.ts-type .ts-name, .ts-type .ts-meta { align-self: stretch; }
 .ts-name { line-height: 1.15; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ts-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; }
 .ts-meta .muted { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -341,14 +364,13 @@ button.badge-token:hover { border-color: var(--accent); }
 .ts-chips { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; max-width: 100%; }
 .badge-token.approx { background: transparent; border-style: dashed; }
 .ts-chips .badge { max-width: 100%; }
-.ts-class { display: block; max-width: 100%; min-width: 0; padding: 1px 6px; border-radius: 4px; border: 1px dashed var(--border-strong); font: 12px/18px var(--mono); color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .stack-more { color: var(--muted); font-weight: 500; }
 .ts-value { font-size: 13px; color: var(--text); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .ts-value .muted { font-size: 11.5px; }
 
 .ts-tip { display: none; }
 
-/* Narrow panel: each row becomes a card. Name, meta and token on top; then a full-width font-family
+/* Narrow panel: each row becomes a card. Name, token and meta on top; then a full-width font-family
    row; then font size · line height / font weight · letter spacing as a 2×2 grid with dividers. */
 @container (max-width: 760px) {
   .ts-tip { display: block; }
@@ -359,16 +381,15 @@ button.badge-token:hover { border-color: var(--accent); }
   .ts-row > * + * { border-left: 0; }
   .ts-row > * { padding: 12px 16px; }
   .ts-label { display: block; }
-  .ts-type, .ts-tokencol, .ts-family { grid-column: 1 / -1; }
-  .ts-type { padding-top: 16px; padding-bottom: 8px; }
-  .ts-tokencol { flex-direction: row; align-items: center; padding-top: 0 !important; padding-bottom: 14px; }
-  .ts-tokencol .ts-label { display: none; }
+  .ts-type, .ts-family { grid-column: 1 / -1; }
+  /* Card header: style name, token and heading tag on a tinted band. */
+  .ts-type { padding-top: 16px; padding-bottom: 14px; background: var(--card-head); }
   .ts-family { flex-direction: row; align-items: center; flex-wrap: wrap; gap: 8px; }
   .ts-family .ts-value { margin-left: 8px; font-size: 14px; }
-  .ts-family, .ts-cell:not(.ts-tokencol):not(.ts-family) { border-top: 1px solid var(--border); }
+  .ts-cell { border-top: 1px solid var(--border); }
   /* Font size and font weight sit in the left column. */
-  .ts-row > :nth-child(4), .ts-row > :nth-child(6) { border-right: 1px solid var(--border); }
-  .ts-row > :nth-child(n + 4) { padding-top: 14px; padding-bottom: 14px; }
+  .ts-row > :nth-child(3), .ts-row > :nth-child(5) { border-right: 1px solid var(--border); }
+  .ts-row > :nth-child(n + 3) { padding-top: 14px; padding-bottom: 14px; }
 }
 
 /* ---- Tokens ------------------------------------------------------------- */
@@ -417,7 +438,7 @@ button.badge-token:hover { border-color: var(--accent); }
 .shadow-card { display: flex; flex-direction: column; overflow: hidden; }
 .shadow-stage {
   position: relative; height: 120px; display: grid; place-items: center;
-  background: #f1f1f4; background-image: radial-gradient(#dcdce3 1px, transparent 1px); background-size: 14px 14px;
+  background: #f1f1f4;
   border-bottom: 1px solid var(--border);
 }
 .shadow-sample { width: 96px; height: 60px; border-radius: 10px; background: #fff; }
