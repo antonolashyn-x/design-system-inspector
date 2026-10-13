@@ -7,11 +7,12 @@ import { Colors } from './views/Colors';
 import { Typography } from './views/Typography';
 import { Tokens } from './views/Tokens';
 import { Shadows } from './views/Shadows';
+import { Gradients } from './views/Gradients';
 import { exportZip } from './export';
 import { useTheme, type Theme } from './theme';
 import logoUrl from '../../public/icons/icon-48.png';
 
-export type TabId = 'overview' | 'colors' | 'typography' | 'tokens' | 'shadows';
+export type TabId = 'overview' | 'colors' | 'typography' | 'tokens' | 'shadows' | 'gradients';
 
 type Status = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'ready'; data: AnalysisResult };
 
@@ -143,6 +144,7 @@ export function App({ bridge }: { bridge: Bridge }) {
     { id: 'typography', label: 'Typography' },
     { id: 'tokens', label: 'Tokens' },
     { id: 'shadows', label: 'Shadows' },
+    { id: 'gradients', label: 'Gradients' },
   ];
 
   return (
@@ -226,6 +228,7 @@ export function App({ bridge }: { bridge: Bridge }) {
           {data && tab === 'typography' && <Typography styles={data.typography} tokens={data.tokens} />}
           {data && tab === 'tokens' && <Tokens tokens={data.tokens} themes={data.themes ?? []} />}
           {data && tab === 'shadows' && <Shadows shadows={data.shadows} />}
+          {data && tab === 'gradients' && <Gradients gradients={data.gradients ?? []} />}
         </main>
 
         <footer className="footbar">
@@ -254,7 +257,7 @@ export function App({ bridge }: { bridge: Bridge }) {
 function FocusBar({ focus, onParent, onExit, onRepick }: { focus: FocusInfo; onParent: () => void; onExit: () => void; onRepick: () => void }) {
   return (
     <div className="focus-bar">
-      <span className="focus-text" title={`${focus.path}\n\nColors, typography and shadows cover only this element and its children. Tokens still cover the whole page.`}>
+      <span className="focus-text" title={`${focus.path}\n\nColors, typography, shadows and gradients cover only this element and its children. Tokens still cover the whole page.`}>
         <span className="muted">Focused on</span>{' '}
         <button className="mono focus-label" onClick={onRepick} title="Select a different element">
           {focus.label}

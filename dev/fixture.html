@@ -60,6 +60,8 @@
       .badge { background: hsl(var(--primary)); color: white; font-size: 12px; padding: 2px 8px; border-radius: 999px; }
       .muted { color: #6b7280; }
       .alert { font: var(--text-body-m); margin-top: var(--space-8); padding: var(--space-4); background: #fef3c7; border-left: 4px solid #f59e0b; color: #92400e; box-shadow: inset 0 0 0 1px rgba(146, 64, 14, 0.15); }
+      .hero-bg { background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%); color: #fff; padding: var(--space-4); border-radius: var(--radius-md); margin-top: var(--space-4); }
+      .glow { background: radial-gradient(circle at top left, rgba(124, 58, 237, 0.4), transparent 60%), #fff; padding: var(--space-4); }
       svg path { fill: var(--color-primary); }
     </style>
     <script type="module" src="../src/content/index.ts"></script>
@@ -92,6 +94,8 @@
         <div class="card featured"><h2 class="heading-m">Components</h2><p>Accessible building blocks.</p></div>
         <div class="card"><h2 class="heading-m">Docs</h2><p>Guides for every team.</p></div>
       </div>
+      <div class="hero-bg">Gradient banner</div>
+      <div class="glow">Radial glow</div>
       <div class="alert" style="--alert-accent: #f59e0b">Heads up: this is a fixture page for testing.</div>
     </main>
   </body>

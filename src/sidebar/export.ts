@@ -466,6 +466,10 @@ function build(data: AnalysisResult) {
       path: 'detected/shadows.json',
       content: json(data.shadows.map((s) => ({ value: s.value, layers: s.layers, usage: s.count, tokens: s.tokens.map((t) => t.name) }))),
     },
+    {
+      path: 'detected/gradients.json',
+      content: json(data.gradients.map((g) => ({ value: g.value, kind: g.kind, repeating: g.repeating, config: g.config, stops: g.stops, usage: g.count }))),
+    },
     { path: 'raw/scan.json', content: json(data) },
   );
 
