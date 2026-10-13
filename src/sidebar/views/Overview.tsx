@@ -20,6 +20,7 @@ export function Overview({ data, go }: { data: AnalysisResult; go: (t: TabId) =>
     { tab: 'typography', label: 'Text styles', value: data.typography.length, sub: `${families} font ${families === 1 ? 'family' : 'families'}` },
     { tab: 'tokens', label: 'CSS tokens', value: data.tokens.length, sub: aliases ? `${aliases} are aliases` : `${groupRows.length} groups` },
     { tab: 'shadows', label: 'Shadows', value: data.shadows.length, sub: `${data.shadows.filter((s) => s.tokens.length).length} match a token` },
+    { tab: 'gradients', label: 'Gradients', value: data.gradients?.length ?? 0, sub: 'from background-image' },
   ];
 
   return (

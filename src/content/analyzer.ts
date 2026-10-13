@@ -3,6 +3,8 @@ import type {
   ColorEntry,
   ColorRole,
   CssToken,
+  GradientEntry,
+  GradientStop,
   ShadowEntry,
   ShadowLayer,
   TokenRef,
@@ -72,6 +74,28 @@ function splitTopLevel(value: string, sep = ','): string[] {
   }
   if (cur.trim()) out.push(cur.trim());
   return out;
+}
+
+/** Every gradient() function in a computed background-image value (url() layers are skipped). */
+function extractGradients(value: string): string[] {
+  return splitTopLevel(value).filter((l) => /^(repeating-)?(linear|radial|conic)-gradient\(/.test(l));
+}
+
+function parseGradient(value: string): Omit<GradientEntry, 'key' | 'count'> | null {
+  const m = /^(repeating-)?(linear|radial|conic)-gradient\((.*)\)$/s.exec(value);
+  if (!m) return null;
+  const parts = splitTopLevel(m[3]);
+  let config = '';
+  // The first part is a prelude (direction, shape, angle, position) unless it starts with a color.
+  if (parts.length && /^(to |from |at |circle|ellipse|closest|farthest|-?[\d.]+(deg|rad|turn|grad)|in )/.test(parts[0])) config = parts.shift()!;
+  const stops: GradientStop[] = [];
+  for (const part of parts) {
+    // A stop is "<color> [<position>…]"; the color may itself contain spaces inside parentheses.
+    const sm = /^((?:[a-z-]+\([^)]*\)|#[0-9a-f]+|[a-z]+))\s*(.*)$/i.exec(part);
+    if (sm) stops.push({ color: sm[1], position: sm[2].trim() });
+    else stops.push({ color: part, position: '' });
+  }
+  return { value, kind: m[2] as GradientEntry['kind'], repeating: !!m[1], config, stops };
 }
 
 function parseShadow(value: string): ShadowLayer[] {
@@ -312,6 +336,7 @@ export function analyzePage(root?: Element): AnalysisResult {
   const colors = new Map<string, ColorEntry>();
   const typo = new Map<string, TypographyEntry>();
   const shadows = new Map<string, ShadowEntry>();
+  const gradients = new Map<string, GradientEntry>();
   const fonts = new Map<string, number>();
 
   const addColor = (raw: string, role: ColorRole, el: Element) => {
@@ -412,6 +437,22 @@ export function analyzePage(root?: Element): AnalysisResult {
       register(`ff:${cs.fontFamily}`, el);
       register(`fs:${cs.fontSize}`, el);
       register(`fw:${cs.fontWeight}`, el);
+    }
+
+    // Gradients
+    if (cs.backgroundImage && cs.backgroundImage !== 'none' && cs.backgroundImage.includes('-gradient(')) {
+      for (const value of new Set(extractGradients(cs.backgroundImage))) {
+        const key = `gradient:${value}`;
+        let entry = gradients.get(key);
+        if (!entry) {
+          const parsed = parseGradient(value);
+          if (!parsed) continue;
+          entry = { key, count: 0, ...parsed };
+          gradients.set(key, entry);
+        }
+        entry.count++;
+        register(key, el);
+      }
     }
 
     // Shadows
@@ -553,5 +594,6 @@ export function analyzePage(root?: Element): AnalysisResult {
     tokens,
     themes,
     shadows: [...shadows.values()].sort(byCount),
+    gradients: [...gradients.values()].sort(byCount),
   };
 }

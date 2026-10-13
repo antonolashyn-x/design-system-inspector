@@ -70,6 +70,26 @@ export interface ShadowEntry {
   tokens: TokenRef[];
 }
 
+export interface GradientStop {
+  color: string;
+  /** Position as written ("40%", "12px"), empty when implicit. */
+  position: string;
+}
+
+export type GradientKind = 'linear' | 'radial' | 'conic';
+
+export interface GradientEntry {
+  key: string;
+  /** A single gradient() function, as computed. */
+  value: string;
+  kind: GradientKind;
+  repeating: boolean;
+  /** Direction / shape / angle prelude, e.g. "90deg" or "circle at center"; empty when default. */
+  config: string;
+  stops: GradientStop[];
+  count: number;
+}
+
 export type TokenGroup =
   | 'color'
   | 'typography'
@@ -168,13 +188,14 @@ export interface AnalysisResult {
   /** Color themes detected from token declarations (empty when the site has a single theme). */
   themes: ThemeInfo[];
   shadows: ShadowEntry[];
+  gradients: GradientEntry[];
   /** Set when colors, typography and shadows only cover one element's subtree. */
   focus?: FocusInfo;
 }
 
 // ---- Messaging -------------------------------------------------------------
 
-/** Registry keys: "color:#HEX", "type:<style>", "shadow:<value>", "ff:<family>", "fs:<size>", "fw:<weight>". */
+/** Registry keys: "color:#HEX", "type:<style>", "shadow:<value>", "gradient:<value>", "ff:<family>", "fs:<size>", "fw:<weight>". */
 export type InspectorRequest =
   | { type: 'dsi:ping' }
   | { type: 'dsi:analyze' }

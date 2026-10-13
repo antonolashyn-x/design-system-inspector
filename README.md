@@ -5,7 +5,7 @@
 <h1 align="center">Design System Inspector</h1>
 
 <p align="center">
-  Reverse-engineer the design system of any website: colors, typography, CSS tokens and shadows.<br />
+  Reverse-engineer the design system of any website: colors, typography, CSS tokens, shadows and gradients.<br />
   A browser extension for Chrome, Opera, Edge and Brave. Runs 100% locally.
 </p>
 
@@ -28,6 +28,7 @@
 | **Typography** | A type scale of every text style, with family, size, line height, weight and letter spacing, and the tokens behind each one. |
 | **Tokens** | All CSS custom properties, grouped into color, typography, spacing, radius, shadow, size, motion, z-index and breakpoint. Shows aliases, light/dark values and usage counts. |
 | **Shadows** | Live previews of every `box-shadow`, split into layers. |
+| **Gradients** | Every `linear-`, `radial-` and `conic-gradient` (including repeating ones) from `background-image`, with a live preview, direction and color stops. |
 | **Find** | Outlines every element that uses a color, text style or shadow. Step through them with ‹ ›. |
 | **Inspect mode** | Click the cursor icon, then pick any element on the page (↑ ↓ for parent / child, Esc to cancel). Colors, typography and shadows are then limited to that element and its children. Use **Parent** to widen the focus or × to go back to the whole page. |
 | **Export** | Downloads a .zip: tokens split by category (color, typography, spacing, sizing, radius, shadow, motion…) in the W3C Design Tokens format, text styles, theme overrides, a `tokens.css`, and the values the page actually renders. |
@@ -113,7 +114,7 @@ A size that follows the role word is added, e.g. `btn-lg` → *Button LG*, `disp
 
 - Stylesheets from other domains that block reading can't be inspected. Tokens on `:root` are still found, but tokens scoped elsewhere in those files are missed. The Overview shows how many stylesheets were blocked.
 - Only the main page is scanned: no iframes or closed shadow roots, and at most 20,000 elements.
-- Gradients, `text-shadow` and `filter: drop-shadow` aren't analysed yet.
+- `text-shadow` and `filter: drop-shadow` aren't analysed yet. Gradients are read from `background-image` only (not `border-image` or `mask-image`).
 - Font previews use the fonts installed on your computer.
 
 </details>
