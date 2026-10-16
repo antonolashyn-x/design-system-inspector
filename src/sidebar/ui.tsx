@@ -35,6 +35,8 @@ export const Icons = {
   warn: (s?: number) => icon(<><path d="M12 9v4M12 17h.01" /><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" /></>, s),
   arrow: (s?: number) => icon(<path d="M5 12h14M13 6l6 6-6 6" />, s),
   chevron: (s?: number) => icon(<path d="m9 18 6-6-6-6" />, s),
+  collapseAll: (s?: number) => icon(<path d="m7 20 5-5 5 5M7 4l5 5 5-5" />, s),
+  expandAll: (s?: number) => icon(<path d="m7 15 5 5 5-5M7 9l5-5 5 5" />, s),
   panelClose: (s?: number) => icon(<><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M15 3v18" /><path d="m8 9 3 3-3 3" /></>, s),
   pointer: (s?: number) => icon(<><path d="M4 4l6.5 16 2.3-6.7L19.5 11z" /><path d="m13 13 6 6" /></>, s),
   parent: (s?: number) => icon(<><path d="M12 19V5" /><path d="m5 12 7-7 7 7" /></>, s),
@@ -42,6 +44,18 @@ export const Icons = {
   sun: (s?: number) => icon(<><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></>, s),
   moon: (s?: number) => icon(<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />, s),
   monitor: (s?: number) => icon(<><rect x="2" y="4" width="20" height="13" rx="2" /><path d="M8 21h8M12 17v4" /></>, s),
+  list: (s?: number) => icon(<><path d="M9 6h11M9 12h11M9 18h11" /><path d="M4 6h.01M4 12h.01M4 18h.01" /></>, s),
+  table: (s?: number) => icon(<><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M9 4v16M9 10h12M9 15h12" /></>, s),
+  sidebar: (s?: number) => icon(<><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M9 3v18" /></>, s),
+  // Token types, as in Figma's variables table.
+  palette: (s?: number) => icon(<><circle cx="13.5" cy="6.5" r=".5" fill="currentColor" /><circle cx="17.5" cy="10.5" r=".5" fill="currentColor" /><circle cx="8.5" cy="7.5" r=".5" fill="currentColor" /><circle cx="6.5" cy="12.5" r=".5" fill="currentColor" /><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.44-.18-.84-.44-1.13-.29-.29-.44-.65-.44-1.12a1.64 1.64 0 0 1 1.67-1.67h2c3.05 0 5.55-2.5 5.55-5.55C21.97 6.01 17.46 2 12 2z" /></>, s),
+  type: (s?: number) => icon(<path d="M4 7V4h16v3M9 20h6M12 4v16" />, s),
+  spacing: (s?: number) => icon(<><path d="M3 5v14M21 5v14M7 12h10" /><path d="m10 9-3 3 3 3M14 9l3 3-3 3" /></>, s),
+  radius: (s?: number) => icon(<path d="M4 20v-8a8 8 0 0 1 8-8h8" />, s),
+  shadow: (s?: number) => icon(<><rect x="3" y="3" width="14" height="14" rx="2" /><path d="M21 8v11a2 2 0 0 1-2 2H8" /></>, s),
+  ruler: (s?: number) => icon(<><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.4 2.4 0 0 1 0-3.4l2.6-2.6a2.4 2.4 0 0 1 3.4 0Z" /><path d="m14.5 12.5 2-2M11.5 9.5l2-2M8.5 6.5l2-2M17.5 15.5l2-2" /></>, s),
+  timer: (s?: number) => icon(<><path d="M10 2h4M12 14l3-3" /><circle cx="12" cy="14" r="8" /></>, s),
+  layers: (s?: number) => icon(<><path d="m12 3 9 5-9 5-9-5z" /><path d="m3 13 9 5 9-5" /></>, s),
 };
 
 // ---- Primitives ------------------------------------------------------------

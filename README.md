@@ -26,7 +26,7 @@
 | **Overview** | A one-screen summary: palette, font families, token groups and counts. |
 | **Colors** | Every color used on the page, merged by HEX and sorted by usage. Shows where each one is used (text, background, border, SVG) and the tokens that hold it. |
 | **Typography** | A type scale of every text style, with family, size, line height, weight and letter spacing, and the tokens behind each one. |
-| **Tokens** | All CSS custom properties, grouped into color, typography, spacing, radius, shadow, size, motion, z-index and breakpoint. Shows aliases, light/dark values and usage counts. |
+| **Tokens** | All CSS custom properties, grouped into color, typography, spacing, radius, shadow, size, motion, z-index and breakpoint. Shows aliases, light/dark values and usage counts. Switch to the **table view** for a Figma-style layout: categories and name groups (`color / text / brand`) on the left, a table with one column per theme on the right. |
 | **Shadows** | Live previews of every `box-shadow`, split into layers. |
 | **Gradients** | Every `linear-`, `radial-` and `conic-gradient` (including repeating ones) from `background-image`, with a live preview, direction and color stops. |
 | **Find** | Outlines every element that uses a color, text style or shadow. Step through them with ‹ ›. |

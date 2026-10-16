@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { CssToken, ThemeInfo, TokenGroup } from '../../shared/types';
 import { Copyable, Empty, FontStack, Icons, Search, Segmented, ShowMore, useActions } from '../ui';
+import { ALIAS_RE, TokenTable, type Collection } from './TokenTable';
 
 export const GROUP_LABELS: Record<TokenGroup, string> = {
   color: 'Color',
@@ -55,7 +56,50 @@ function lengthRank(value: string): number {
 const sortRadius = (list: CssToken[]) =>
   [...list].sort((a, b) => lengthRank(a.value) - lengthRank(b.value) || a.name.localeCompare(b.name, undefined, { numeric: true }));
 
-const ALIAS_RE = /^var\(\s*(--[\w-]+)\s*(?:,.*)?\)$/;
+// List: cards under category chips. Table: categories and name groups on the left, a Figma-style table on the right.
+type Layout = 'list' | 'table';
+const LAYOUT_KEY = 'dsi-token-layout';
+
+function readLayout(): Layout {
+  try {
+    return localStorage.getItem(LAYOUT_KEY) === 'table' ? 'table' : 'list';
+  } catch {
+    return 'list';
+  }
+}
+
+function saveLayout(layout: Layout) {
+  try {
+    localStorage.setItem(LAYOUT_KEY, layout);
+  } catch {
+    /* storage unavailable: the layout still applies until the panel closes */
+  }
+}
+
+const LAYOUTS = [
+  { value: 'list', label: 'List view', icon: Icons.list },
+  { value: 'table', label: 'Table view: groups on the left, tokens on the right', icon: Icons.table },
+] as const;
+
+function LayoutSwitch({ value, onChange }: { value: Layout; onChange: (l: Layout) => void }) {
+  return (
+    <div className="segmented icon-seg" role="radiogroup" aria-label="Layout">
+      {LAYOUTS.map((l) => (
+        <button
+          key={l.value}
+          role="radio"
+          aria-checked={value === l.value}
+          aria-label={l.label}
+          title={l.label}
+          className={value === l.value ? 'is-active' : ''}
+          onClick={() => onChange(l.value)}
+        >
+          {l.icon(15)}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 function Preview({
   group,
@@ -224,11 +268,19 @@ export function Tokens({ tokens, themes }: { tokens: CssToken[]; themes: ThemeIn
   const [q, setQ] = useState('');
   const [view, setView] = useState<string>('all'); // 'all' or a theme id
   const [themedOnly, setThemedOnly] = useState(false);
+  // The category is shared by both layouts: a chip in the list, a collection in the table.
   const [group, setGroupState] = useState<TokenGroup | 'all'>('all');
   const [cat, setCat] = useState<TypeCat | 'all'>('all');
+  const [path, setPath] = useState(''); // table: selected name group within the category ("" = all)
   const setGroup = (g: TokenGroup | 'all') => {
     setGroupState(g);
     setCat('all');
+    setPath('');
+  };
+  const [layout, setLayoutState] = useState<Layout>(readLayout);
+  const setLayout = (l: Layout) => {
+    setLayoutState(l);
+    saveLayout(l);
   };
   const [aliasesOnly, setAliasesOnly] = useState(false);
   const [limit, setLimit] = useState(250);
@@ -239,12 +291,11 @@ export function Tokens({ tokens, themes }: { tokens: CssToken[]; themes: ThemeIn
     return m;
   }, [tokens]);
 
-  const filtered = useMemo(() => {
+  // Search and filters, in every category.
+  const matches = useMemo(() => {
     const query = q.trim().toLowerCase();
     return tokens.filter((t) => {
       const tv = t.themeValues;
-      if (group !== 'all' && t.group !== group) return false;
-      if (group === 'typography' && cat !== 'all' && typeCat(t) !== cat) return false;
       if (aliasesOnly && !t.aliasOf) return false;
       if (tv && view !== 'all' && !tv[view]) return false; // e.g. a dark-only token in the light view
       if (themedOnly && !(tv && (view === 'all' || !tv[view]?.inherited))) return false;
@@ -252,7 +303,24 @@ export function Tokens({ tokens, themes }: { tokens: CssToken[]; themes: ThemeIn
       const values = tv ? Object.values(tv).map((v) => v.value.toLowerCase()) : [];
       return t.name.toLowerCase().includes(query) || t.value.toLowerCase().includes(query) || t.rawValue.toLowerCase().includes(query) || values.some((v) => v.includes(query));
     });
-  }, [tokens, q, group, cat, aliasesOnly, view, themedOnly]);
+  }, [tokens, q, aliasesOnly, view, themedOnly]);
+
+  const inGroup = (t: CssToken) => group === 'all' || t.group === group;
+  const filtered = useMemo(
+    () => matches.filter((t) => inGroup(t) && (group !== 'typography' || cat === 'all' || typeCat(t) === cat)),
+    [matches, group, cat],
+  );
+  const collectionTokens = useMemo(() => tokens.filter(inGroup), [tokens, group]);
+  const collectionMatches = useMemo(() => matches.filter(inGroup), [matches, group]);
+
+  const collections = useMemo<Collection[]>(() => {
+    const m = new Map<TokenGroup, number>();
+    for (const t of matches) m.set(t.group, (m.get(t.group) ?? 0) + 1);
+    return [
+      { id: 'all', label: 'All', count: matches.length },
+      ...ORDER.filter((g) => counts.get(g)).map((g) => ({ id: g, label: GROUP_LABELS[g], count: m.get(g) ?? 0 })),
+    ];
+  }, [matches, counts]);
 
   const catCounts = useMemo(() => {
     const m = new Map<TypeCat, number>();
@@ -266,8 +334,10 @@ export function Tokens({ tokens, themes }: { tokens: CssToken[]; themes: ThemeIn
   }, [filtered, limit]);
 
   const focusAlias = (name: string) => {
+    const target = tokens.find((t) => t.name === name);
     setQ('');
-    setGroup('all');
+    // The table stays in its collection when the target is there (and switches to the target's otherwise).
+    setGroup(layout === 'table' && target ? (group === 'all' || target.group === group ? group : target.group) : 'all');
     setAliasesOnly(false);
     setThemedOnly(false);
     setLimit(tokens.length);
@@ -295,7 +365,7 @@ export function Tokens({ tokens, themes }: { tokens: CssToken[]; themes: ThemeIn
   const defaultTheme = themes.find((t) => t.isDefault);
 
   return (
-    <div className="view">
+    <div className={`view${layout === 'table' ? ' is-table' : ''}`}>
       {themes.length > 0 && (
         <div className="theme-bar">
           <Segmented
@@ -317,7 +387,7 @@ export function Tokens({ tokens, themes }: { tokens: CssToken[]; themes: ThemeIn
           </div>
         </div>
       )}
-      <div className="toolbar">
+      <div className="toolbar tokens-toolbar">
         <Search value={q} onChange={setQ} placeholder="Search token name or value" />
         {aliasCount > 0 && (
           <label className="toggle" title="Show only semantic tokens that point at another token">
@@ -325,64 +395,85 @@ export function Tokens({ tokens, themes }: { tokens: CssToken[]; themes: ThemeIn
             Aliases only <span className="seg-count">{aliasCount}</span>
           </label>
         )}
+        <LayoutSwitch value={layout} onChange={setLayout} />
       </div>
-      <div className="chips">
-        <button className={`chip ${group === 'all' ? 'is-active' : ''}`} onClick={() => setGroup('all')}>
-          All <span>{tokens.length}</span>
-        </button>
-        {ORDER.filter((g) => counts.get(g)).map((g) => (
-          <button key={g} className={`chip ${group === g ? 'is-active' : ''}`} onClick={() => setGroup(g)}>
-            {GROUP_LABELS[g]} <span>{counts.get(g)}</span>
-          </button>
-        ))}
-      </div>
-      {group === 'typography' && (
-        <div className="chips sub-chips">
-          <button className={`chip ${cat === 'all' ? 'is-active' : ''}`} onClick={() => setCat('all')}>
-            All <span>{counts.get('typography')}</span>
-          </button>
-          {TYPE_CATS.filter((c) => catCounts.get(c)).map((c) => (
-            <button key={c} className={`chip ${cat === c ? 'is-active' : ''}`} onClick={() => setCat(c)}>
-              {TYPE_CAT_LABELS[c]} <span>{catCounts.get(c)}</span>
-            </button>
-          ))}
-        </div>
-      )}
 
-      {filtered.length === 0 ? (
-        <Empty title="No tokens match" />
+      {layout === 'table' ? (
+        <TokenTable
+          tokens={collectionTokens}
+          shown={collectionMatches}
+          collections={collections}
+          collection={group}
+          onCollection={setGroup}
+          path={path}
+          onPath={setPath}
+          themes={themes}
+          view={view}
+          limit={limit}
+          onMore={() => setLimit((l) => l + 200)}
+          onFocusAlias={focusAlias}
+        />
       ) : (
         <>
-          {sections.map(([g, list]) => (
-            <section key={g} className="token-section">
-              <h4 className="group-title">
-                {GROUP_LABELS[g]} <span className="muted">{filtered.filter((t) => t.group === g).length}</span>
-              </h4>
-              {g === 'typography' ? (
-                TYPE_CATS.map((c) => [c, list.filter((t) => typeCat(t) === c)] as const)
-                  .filter(([, sub]) => sub.length)
-                  .map(([c, sub]) => (
-                    <div key={c} className="token-subsection">
-                      <h5 className="subgroup-title">
-                        {TYPE_CAT_LABELS[c]} <span className="muted">{sub.length}</span>
-                      </h5>
-                      <div className="list">
-                        {sortTypeTokens(c, sub).map((t) => (
-                          <TokenRow key={t.name} t={t} view={view} themes={themes} onFocusAlias={focusAlias} />
-                        ))}
-                      </div>
+          <div className="chips">
+            <button className={`chip ${group === 'all' ? 'is-active' : ''}`} onClick={() => setGroup('all')}>
+              All <span>{tokens.length}</span>
+            </button>
+            {ORDER.filter((g) => counts.get(g)).map((g) => (
+              <button key={g} className={`chip ${group === g ? 'is-active' : ''}`} onClick={() => setGroup(g)}>
+                {GROUP_LABELS[g]} <span>{counts.get(g)}</span>
+              </button>
+            ))}
+          </div>
+          {group === 'typography' && (
+            <div className="chips sub-chips">
+              <button className={`chip ${cat === 'all' ? 'is-active' : ''}`} onClick={() => setCat('all')}>
+                All <span>{counts.get('typography')}</span>
+              </button>
+              {TYPE_CATS.filter((c) => catCounts.get(c)).map((c) => (
+                <button key={c} className={`chip ${cat === c ? 'is-active' : ''}`} onClick={() => setCat(c)}>
+                  {TYPE_CAT_LABELS[c]} <span>{catCounts.get(c)}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {filtered.length === 0 ? (
+            <Empty title="No tokens match" />
+          ) : (
+            <>
+              {sections.map(([g, list]) => (
+                <section key={g} className="token-section">
+                  <h4 className="group-title">
+                    {GROUP_LABELS[g]} <span className="muted">{filtered.filter((t) => t.group === g).length}</span>
+                  </h4>
+                  {g === 'typography' ? (
+                    TYPE_CATS.map((c) => [c, list.filter((t) => typeCat(t) === c)] as const)
+                      .filter(([, sub]) => sub.length)
+                      .map(([c, sub]) => (
+                        <div key={c} className="token-subsection">
+                          <h5 className="subgroup-title">
+                            {TYPE_CAT_LABELS[c]} <span className="muted">{sub.length}</span>
+                          </h5>
+                          <div className="list">
+                            {sortTypeTokens(c, sub).map((t) => (
+                              <TokenRow key={t.name} t={t} view={view} themes={themes} onFocusAlias={focusAlias} />
+                            ))}
+                          </div>
+                        </div>
+                      ))
+                  ) : (
+                    <div className="list">
+                      {(g === 'radius' ? sortRadius(list) : list).map((t) => (
+                        <TokenRow key={t.name} t={t} view={view} themes={themes} onFocusAlias={focusAlias} />
+                      ))}
                     </div>
-                  ))
-              ) : (
-                <div className="list">
-                  {(g === 'radius' ? sortRadius(list) : list).map((t) => (
-                    <TokenRow key={t.name} t={t} view={view} themes={themes} onFocusAlias={focusAlias} />
-                  ))}
-                </div>
-              )}
-            </section>
-          ))}
-          <ShowMore shown={limit} total={filtered.length} onMore={() => setLimit((l) => l + 200)} />
+                  )}
+                </section>
+              ))}
+              <ShowMore shown={limit} total={filtered.length} onMore={() => setLimit((l) => l + 200)} />
+            </>
+          )}
         </>
       )}
     </div>

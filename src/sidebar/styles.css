@@ -432,6 +432,101 @@ button.badge-token:hover { border-color: var(--accent); }
 .tk-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex: none; max-width: 170px; }
 .scope-chip { font-size: 10.5px; padding: 1px 6px; border-radius: 4px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px; }
 .src-chip { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--warn-ink); background: var(--warn-bg); border: 1px solid var(--warn-line); padding: 0 5px; border-radius: 4px; }
+.tokens-toolbar .search { min-width: 150px; }
+.segmented.icon-seg { flex: none; padding: 2px; }
+.segmented.icon-seg button { width: 30px; height: 28px; padding: 0; justify-content: center; }
+
+/* ---- Tokens: table layout ----------------------------------------------- */
+/* Collections and name groups on the left, a Figma-style variables table on the right. Both scroll on their own. */
+.view.is-table { height: 100%; padding-bottom: 16px; }
+.tt {
+  position: relative; flex: 1; min-height: 280px; display: flex; overflow: hidden;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm);
+}
+.tt-nav { flex: none; width: 200px; min-height: 0; display: flex; flex-direction: column; background: var(--surface); border-right: 1px solid var(--border); }
+/* Narrow panel: the sidebar slides over the table. */
+.tt.is-narrow .tt-nav { position: absolute; z-index: 3; top: 0; bottom: 0; left: 0; width: min(232px, 85%); box-shadow: var(--shadow-md); }
+.tt-scrim { position: absolute; inset: 0; z-index: 2; background: color-mix(in oklch, var(--bg) 55%, transparent); }
+.tt-nav-head {
+  flex: none; height: 37px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 0 4px 0 12px; border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 600;
+}
+.tt-nav-head .icon-ghost { width: 28px; height: 28px; color: var(--muted); }
+.tt-nav-head .icon-ghost:hover { color: var(--text); }
+.tt-nav-list { display: flex; flex-direction: column; gap: 1px; padding: 6px; }
+.tt-nav-title {
+  flex: none; min-height: 37px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 4px 4px 0 12px; border-top: 1px solid var(--border); font-size: 12px; font-weight: 600;
+}
+.tt-nav-title .icon-ghost { width: 28px; height: 28px; color: var(--muted); }
+.tt-nav-title .icon-ghost:hover { color: var(--text); }
+.tt-nav-groups { flex: 1; min-height: 0; overflow-y: auto; padding-top: 2px; }
+.tt-item {
+  flex: none; width: 100%; height: 28px; display: flex; align-items: center; gap: 8px; padding: 0 8px;
+  border-radius: 6px; font-size: 12.5px; color: var(--text-2); text-align: left;
+}
+/* A group row: indent, then the chevron in the gutter left of the highlight (as in Figma). */
+.tt-node { flex: none; display: flex; align-items: center; padding-left: calc((var(--depth) - 1) * 14px); }
+.tt-node .tt-item { flex: 1; min-width: 0; }
+.tt-chev { flex: none; width: 16px; height: 28px; display: grid; place-items: center; color: var(--muted); }
+.tt-chev:is(button):hover { color: var(--text); }
+.tt-chev svg { transform: rotate(90deg); transition: transform 0.15s; }
+.tt-chev.is-closed svg { transform: none; }
+.tt-item:hover { background: var(--surface-2); color: var(--text); }
+.tt-item.is-active { background: var(--surface-2); color: var(--text); font-weight: 600; }
+.tt-item.is-dim { opacity: 0.5; }
+.tt-item-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tt-item-count { flex: none; font-size: 11px; font-weight: 400; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.tt-main { flex: 1; min-width: 0; overflow: auto; }
+.tt-grid { min-width: min-content; }
+.tt-row { display: grid; grid-template-columns: var(--tt-cols); border-bottom: 1px solid var(--border); transition: background 0.3s; }
+.tt-row > .tt-cell + .tt-cell { border-left: 1px solid var(--border); }
+.tt-row:not(.tt-head):hover { background: color-mix(in oklch, var(--surface-2) 55%, transparent); }
+.tt-row.flash { background: var(--accent-soft); }
+.tt-cell { min-width: 0; min-height: 36px; display: flex; align-items: center; gap: 8px; padding: 0 12px; overflow: hidden; }
+.tt-head { position: sticky; top: 0; z-index: 1; background: var(--surface); }
+.tt-head .tt-cell { gap: 6px; font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; }
+.tt-th-dot { width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--accent); }
+.tt-loc { min-width: 0; height: 26px; display: inline-flex; align-items: center; gap: 6px; margin-left: -6px; padding: 0 6px; border-radius: 6px; font-weight: 600; }
+.tt-loc:hover { background: var(--surface-2); }
+.tt-loc svg { flex: none; color: var(--muted); }
+.tt-loc-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tt-loc-text .muted { font-weight: 500; }
+.tt-section { padding: 18px 12px 8px; border-bottom: 1px solid var(--border); font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tt-section b { color: var(--text); font-weight: 600; }
+.tt-icon { flex: none; display: inline-flex; color: var(--muted); }
+.tt-name-btn { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; color: var(--text); }
+.tt-name-btn:hover { color: var(--accent-ink); }
+/* One 24px line; whatever wraps onto a second line is clipped. */
+.tt-fit { flex: 1; min-width: 0; height: 24px; display: flex; flex-wrap: wrap; align-items: center; column-gap: 8px; overflow: hidden; }
+.tt-lead { flex: 0 1 auto; min-width: 0; height: 24px; display: flex; align-items: center; gap: 8px; }
+.tt-text { flex: 0 1 auto; color: var(--text); }
+/* .copyable's negative margins make a lone value's wrapper 6px narrower than it, so max-width: 100% would clip it. */
+.tt-lead > .copyable { max-width: none; }
+.tt-sub { flex: none; line-height: 24px; font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+.tt-value.is-inherited > * { opacity: 0.55; }
+.tt-value.is-missing { color: var(--muted); }
+.tt-refs { justify-content: flex-end; font-variant-numeric: tabular-nums; font-size: 12px; }
+/* Alias: a pill naming the referenced token, like Figma's variable chips. */
+.tt-pill {
+  flex: 0 1 auto; min-width: 0; max-width: 100%; height: 24px; display: inline-flex; align-items: center; gap: 6px; padding: 0 7px;
+  border: 1px solid var(--border-strong); border-radius: 6px; background: var(--surface); color: var(--text);
+}
+.tt-pill:has(.tt-swatch) { padding-left: 4px; }
+.tt-pill:hover { border-color: var(--accent); }
+.tt-pill .mono { font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tt-swatch { width: 16px; height: 16px; flex: none; border-radius: 4px; }
+.tt-swatch.checker { background-size: 6px 6px; background-position: 0 0, 0 3px, 3px -3px, -3px 0; }
+.tt-swatch > span { border-radius: inherit; box-shadow: inset 0 0 0 1px var(--border-strong); }
+.tt-mini { width: 18px; height: 18px; flex: none; display: grid; overflow: hidden; border-radius: 4px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--border); }
+.tt-mini-radius { place-items: end; }
+.tt-mini-radius > span { width: 14px; height: 14px; border-top: 1.5px solid var(--accent); border-left: 1.5px solid var(--accent); background: var(--accent-soft); }
+.tt-mini-shadow { place-items: center; }
+.tt-mini-shadow > span { width: 10px; height: 10px; border-radius: 2px; background: #fff; }
+.tt-elsewhere { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 4px 10px; }
+.tt-more { padding: 12px; }
+.tt-more:empty { display: none; }
 
 /* ---- Shadows ------------------------------------------------------------ */
 .shadow-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 10px; }
