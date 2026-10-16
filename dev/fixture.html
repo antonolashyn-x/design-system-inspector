@@ -37,12 +37,28 @@
         --text-body-m: 400 1rem/1.5 var(--font-sans);
         /* Same 14px as --font-size-sm and referenced more often, but the nav links don't use it. */
         --hds-font-heading-xxs-size: 0.875rem;
+        /* Semantic layer named like a Figma variables collection: color / text / brand / bold, … */
+        --color-text-primary: var(--gray-900);
+        --color-text-secondary: #374151;
+        --color-text-disabled: #9ca3af;
+        --color-text-inverse: #ffffff;
+        --color-text-brand-bold: var(--blue-500);
+        --color-text-brand-bold-hovered: var(--blue-600);
+        --color-text-brand-bold-selected: var(--blue-500);
+        --color-text-brand-subtle: #93c5fd;
+        --color-background-neutral: var(--gray-50);
+        --color-background-neutral-hovered: var(--gray-200);
+        --color-background-brand-bold: var(--blue-500);
+        --color-background-brand-bold-hovered: var(--blue-600);
+        --radius-none: 0;
+        --radius-sm: 4px;
+        --radius-lg: 12px;
       }
       .hds-eyebrow, .hds-kicker, .hds-overline { font-size: var(--hds-font-heading-xxs-size); }
       .dark { --color-bg: #0b0b0f; --color-text: #f3f4f6; }
       /* Bootstrap-style themes */
       :root, [data-bs-theme="light"] { --base0A: #ffe69c; --base0B: #79dfc1; --bs-body-bg: #fff; --bs-emphasis: var(--gray-900); }
-      [data-bs-theme="dark"] { --base0A: #6f42c1; --base0B: #084298; --bs-body-bg: #212529; --bs-emphasis: var(--gray-50); }
+      [data-bs-theme="dark"] { --base0A: #6f42c1; --base0B: #084298; --bs-body-bg: #212529; --bs-emphasis: var(--gray-50); --color-text-primary: var(--gray-50); --color-background-neutral: #1f2937; }
       /* OS-driven theme */
       :root { --surface: #ffffff; }
       @media (prefers-color-scheme: dark) { :root { --surface: #18181b; } }
