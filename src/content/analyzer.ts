@@ -45,9 +45,10 @@ function isVisible(el: Element, cs: CSSStyleDeclaration): boolean {
 
 function directText(el: Element): string {
   let text = '';
-  for (const node of Array.from(el.childNodes)) {
+  for (let node = el.firstChild; node; node = node.nextSibling) {
     if (node.nodeType === Node.TEXT_NODE) text += node.textContent ?? '';
   }
+  if (!text) return '';
   return text.replace(/\s+/g, ' ').trim();
 }
 
@@ -386,12 +387,14 @@ export function analyzePage(root?: Element): AnalysisResult {
     if (text) addColor(cs.color, 'text', el);
     addColor(cs.backgroundColor, 'background', el);
 
-    const sides = ['Top', 'Right', 'Bottom', 'Left'] as const;
     const borderColors = new Set<string>();
-    for (const s of sides) {
-      const w = parseFloat(cs.getPropertyValue(`border-${s.toLowerCase()}-width`));
-      const style = cs.getPropertyValue(`border-${s.toLowerCase()}-style`);
-      if (w > 0 && style !== 'none' && style !== 'hidden') borderColors.add(cs.getPropertyValue(`border-${s.toLowerCase()}-color`));
+    // Most elements have no border at all; one cheap check avoids 12 property lookups.
+    if (cs.borderTopWidth !== '0px' || cs.borderRightWidth !== '0px' || cs.borderBottomWidth !== '0px' || cs.borderLeftWidth !== '0px') {
+      for (const s of ['top', 'right', 'bottom', 'left']) {
+        const w = parseFloat(cs.getPropertyValue(`border-${s}-width`));
+        const style = cs.getPropertyValue(`border-${s}-style`);
+        if (w > 0 && style !== 'none' && style !== 'hidden') borderColors.add(cs.getPropertyValue(`border-${s}-color`));
+      }
     }
     for (const c of borderColors) addColor(c, 'border', el);
 
